@@ -97,7 +97,7 @@ end
 local function test_basics_rewrite_name_guild_and_level_lines()
   hover(with({ allBasics = true }))
   Assert.equal(W.LineText(1), "|cff40c7ebBob|r")
-  Assert.equal(W.LineText(2), "|cffffffff<Guild> - Officer|r")
+  Assert.equal(W.LineText(2), "|cff8cb4ff<Guild> - Officer|r")
   Assert.equal(W.LineText(3), "|cffffffff80|r Human |cff40c7ebMage|r |cff4a54e8(Alliance)|r")
   Assert.equal(W.LineText(4), nil, "spec/class line cleared")
   Assert.equal(W.LineText(5), nil, "faction line cleared")
@@ -119,7 +119,7 @@ end
 
 local function test_level_parts_all_off_removes_level_line()
   hover(with({ colorName = true, showGuild = true }))
-  Assert.equal(W.LineText(2), "|cffffffff<Guild> - Officer|r")
+  Assert.equal(W.LineText(2), "|cff8cb4ff<Guild> - Officer|r")
   Assert.equal(W.LineText(3), nil)
   Assert.equal(W.calls.UnitLevel, nil)
 end

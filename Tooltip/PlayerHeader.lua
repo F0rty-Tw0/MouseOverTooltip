@@ -17,7 +17,7 @@ local sub = string.sub
 local tostring = tostring
 
 local FACTION_CODES = { Alliance = "|cff4a54e8", Horde = "|cffe50d12" }
-local GUILD_CODE = "|cffffffff"
+local GUILD_CODE = "|cff8cb4ff"
 local MY_GUILD_CODE = "|cff40ff40"
 
 -- Rewrites Blizzard's player header (name, guild, level lines) into:

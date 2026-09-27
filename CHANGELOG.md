@@ -7,7 +7,7 @@ All releases: **0.1.x (current)**
 ## [Unreleased]
 
 - First release: a clean, lightweight mouseover tooltip in the familiar Blizzard look.
-- Players show a tidy header: class-colored name, guild and rank, then level, race, class and faction on one line. Each part can be switched off on its own, and the lines below move up to close the gap.
+- Players show a tidy header: class-colored name, guild and rank in soft blue, then level, race, class and faction on one line. Each part can be switched off on its own, and the lines below move up to close the gap.
 - Item level of other players in epic purple, fetched quietly in the background and filled in as soon as it arrives.
 - Item level is only looked up once your cursor rests on a player, so sweeping across a crowded city sends no extra requests.
 - Info lines use gold labels and fill the space Blizzard leaves empty, so the tooltip stays compact.
