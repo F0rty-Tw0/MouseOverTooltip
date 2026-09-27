@@ -27,6 +27,9 @@ local inflightUnit, inflightGuid
 local queuedUnit, queuedGuid
 local queuedAt = 0
 local waiting = false
+-- Timed out: not retried until another player is hovered, or every tooltip
+-- rebuild would re-request it.
+local failedGuid
 local timerQueued = false
 local lastNotify = -math.huge
 
@@ -36,6 +39,10 @@ end
 
 function InspectCache.Count()
   return cacheCount
+end
+
+function InspectCache.IsPending(guid)
+  return guid ~= nil and (guid == inflightGuid or guid == queuedGuid)
 end
 
 function InspectCache.Get(guid)
@@ -153,7 +160,10 @@ end
 
 local function onTimeout()
   if waiting and _G.GetTime() - lastNotify >= TIMEOUT then
+    local guid = inflightGuid
     finish()
+    failedGuid = guid
+    notifyReady(guid)
   end
 end
 
@@ -161,6 +171,7 @@ local function sendQueued()
   local unit, guid = queuedUnit, queuedGuid
   queuedUnit, queuedGuid = nil, nil
   if not (unitStillMatches(unit, guid) and _G.CanInspect(unit)) then
+    notifyReady(guid)
     return
   end
   if not frame then
@@ -200,6 +211,10 @@ function InspectCache.Request(unit, guid)
   if guid == nil or Secret.Is(guid) or guid == inflightGuid or guid == queuedGuid or InspectCache.Get(guid) then
     return
   end
+  if guid == failedGuid then
+    return
+  end
+  failedGuid = nil
   if _G.UnitIsUnit(unit, "player") then
     readUnit(unit, guid, true)
     return

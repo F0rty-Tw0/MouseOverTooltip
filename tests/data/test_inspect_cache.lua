@@ -131,6 +131,46 @@ local function test_timeout_unregisters_event()
   Assert.equal(inspectFrame().events.INSPECT_READY, nil)
 end
 
+local function test_pending_from_hover_until_data_arrives()
+  local InspectCache = setup()
+  InspectCache.Request("mouseover", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), true, "queued")
+  W.RunTimers()
+  Assert.equal(InspectCache.IsPending("Player-1"), true, "in flight")
+  inspectFrame():FireEvent("INSPECT_READY", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), false)
+end
+
+local function test_timeout_refreshes_and_does_not_retry_same_player()
+  local InspectCache, ready = setup()
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  W.now = W.now + 5
+  W.RunTimers()
+  Assert.equal(ready[1], "Player-1", "tooltip rebuilt without the placeholder")
+  InspectCache.Request("mouseover", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), false, "no retry loop while hovering")
+end
+
+local function test_hovering_another_player_allows_retry_after_timeout()
+  local InspectCache = setup()
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  W.now = W.now + 5
+  W.RunTimers()
+  W.units.target = { name = "Amy", guid = "Player-2", isPlayer = true }
+  InspectCache.Request("target", "Player-2")
+  InspectCache.Request("mouseover", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), true)
+end
+
+local function test_dropped_request_refreshes_tooltip()
+  local InspectCache, ready = setup()
+  InspectCache.Request("mouseover", "Player-1")
+  W.units.mouseover.isPlayer = false
+  W.RunTimers()
+  Assert.equal(W.calls.NotifyInspect, nil)
+  Assert.equal(ready[1], "Player-1")
+end
+
 local function test_other_inspects_are_ignored()
   local InspectCache = setup()
   hoverAndWait(InspectCache, "mouseover", "Player-1")
@@ -249,6 +289,10 @@ return function()
   test_queued_request_dropped_when_unit_changed()
   test_combat_skip_follows_setting()
   test_timeout_unregisters_event()
+  test_pending_from_hover_until_data_arrives()
+  test_timeout_refreshes_and_does_not_retry_same_player()
+  test_hovering_another_player_allows_retry_after_timeout()
+  test_dropped_request_refreshes_tooltip()
   test_other_inspects_are_ignored()
   test_cache_is_capped_at_100_evicting_oldest()
   test_pvp_read_with_inspect_data_when_wanted()
