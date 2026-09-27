@@ -7,7 +7,8 @@ local function tocFiles()
   local files = {}
   for line in io.lines("MouseOverTooltip.toc") do
     if line ~= "" and string.sub(line, 1, 2) ~= "##" then
-      files[#files + 1] = line
+      -- Drop load conditions such as " [AllowLoadGameType mainline]".
+      files[#files + 1] = string.gsub(line, "%s*%[.*$", "")
     end
   end
   return files
@@ -33,6 +34,17 @@ local function test_every_toc_file_loads_in_order_without_require()
   assert(ok, tostring(err))
 end
 
+local function test_line_filter_loads_on_retail_only()
+  local found
+  for line in io.lines("MouseOverTooltip.toc") do
+    if string.find(line, "LineFilter.lua", 1, true) then
+      found = line
+    end
+  end
+  assert(found == "Tooltip/LineFilter.lua [AllowLoadGameType mainline]", tostring(found))
+end
+
 return function()
   test_every_toc_file_loads_in_order_without_require()
+  test_line_filter_loads_on_retail_only()
 end

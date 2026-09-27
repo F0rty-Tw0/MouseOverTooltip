@@ -34,6 +34,10 @@ function Bootstrap.Initialize(saved)
     readPvp = PvP.Read,
   })
   UnitTooltip.Install(db)
+  -- Retail-only file: absent on Classic, so no require fallback here.
+  if ns.LineFilter then
+    ns.LineFilter.Install(db)
+  end
   Anchor.Install(db)
   Panel.Register(db, function(key, value)
     if key == "minimapButton" then

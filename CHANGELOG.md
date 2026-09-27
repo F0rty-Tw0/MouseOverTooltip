@@ -6,6 +6,8 @@ All releases: **0.1.x (current)**
 
 ## [Unreleased]
 
+- Fixed: player tooltips no longer show an empty line that fills in a moment later with item level (Retail).
+
 ## [0.1.0] - 2026-09-27
 
 - First release: a clean, lightweight mouseover tooltip in the familiar Blizzard look.
