@@ -18,6 +18,8 @@ local concat = table.concat
 
 local ROLE_TEXT = { TANK = "Tank", HEALER = "Healer", DAMAGER = "DPS" }
 local SOURCE_R, SOURCE_G, SOURCE_B = 1, 1, 0.6
+-- Holds the item level line's slot while inspecting, so nothing jumps down.
+local PENDING_TEXT = "..."
 
 local PlayerLines = {}
 
@@ -113,9 +115,12 @@ local function applyHeader(tooltip, unit, guid, db, specName)
   freedCount = PlayerHeader.ClearNoise(levelIndex + 1, numLines, className, freed, freedCount)
 end
 
-local function inspectLine(entry, db, roleText)
+local function inspectLine(entry, db, roleText, pending)
   local ilvl = db.showItemLevel and entry and entry.ilvl
   if not ilvl then
+    if pending and db.showItemLevel and FlavorCompat.hasItemLevel then
+      return Color.Label(Localization.Text("iLvl")) .. " " .. Color.Wrap(Color.GRAY, PENDING_TEXT)
+    end
     return roleText and Localization.Text(roleText)
   end
   local text = Color.Label(Localization.Text("iLvl")) .. " " .. Color.Wrap(Color.EPIC, ilvl)
@@ -146,18 +151,19 @@ end
 
 function PlayerLines.Apply(tooltip, unit, guid, db)
   freedCount, freedNext = 0, 1
-  local entry
+  local entry, pending
   if guid and wantsInspect(db) then
     entry = InspectCache.Get(guid)
     if not entry then
       InspectCache.Request(unit, guid)
+      pending = InspectCache.IsPending(guid)
     end
   end
   local specName, roleText = specInfo(entry, db)
   if PlayerHeader.Wanted(db) then
     applyHeader(tooltip, unit, guid, db, specName)
   end
-  add(tooltip, inspectLine(entry, db, roleText))
+  add(tooltip, inspectLine(entry, db, roleText, pending))
   if db.showMythicPlus and FlavorCompat.hasMythicPlus then
     add(tooltip, MythicPlus.Line(unit))
   end

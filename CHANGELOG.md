@@ -7,6 +7,7 @@ All releases: **0.1.x (current)**
 ## [Unreleased]
 
 - Fixed: player tooltips no longer show an empty line that fills in a moment later with item level (Retail).
+- Item level shows "iLvl ..." while it loads, so the tooltip no longer jumps when the number arrives. If the player can't be inspected, the placeholder goes away.
 
 ## [0.1.0] - 2026-09-27
 

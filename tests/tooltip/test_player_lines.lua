@@ -170,14 +170,19 @@ end
 local function test_item_level_requests_inspect_then_shows_cached_line()
   local db = with({ showItemLevel = true })
   hover(db)
+  Assert.contains(W.AllText(), "|cffffd100iLvl|r |cff808080...|r", "placeholder keeps the line's slot")
   W.RunTimers()
   Assert.equal(W.lastInspect, "mouseover")
-  Assert.notContains(W.AllText(), "iLvl")
   for _, frame in ipairs(W.frames) do
     frame:FireEvent("INSPECT_READY", "Player-1")
   end
   hover(db)
   Assert.contains(W.AllText(), "|cffffd100iLvl|r |cffa335ee639|r")
+end
+
+local function test_no_item_level_placeholder_when_item_level_off()
+  hover(with({ showSpec = true }), { guid = "Player-spec" })
+  Assert.notContains(W.AllText(), "iLvl")
 end
 
 local function test_spec_and_role_from_inspect()
@@ -289,6 +294,7 @@ return function()
   test_my_guild_highlight()
   test_classic_era_without_guild_line_merges_guild_into_level()
   test_item_level_requests_inspect_then_shows_cached_line()
+  test_no_item_level_placeholder_when_item_level_off()
   test_spec_and_role_from_inspect()
   test_disabled_inspect_features_never_inspect()
   test_mythic_plus_line_and_disabled_path()

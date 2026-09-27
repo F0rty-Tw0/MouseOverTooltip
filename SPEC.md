@@ -30,7 +30,7 @@ Player:
 <Guild> - Rank                                    my-guild highlight color when same guild
 Realm                                             only cross-realm
 80 Human Frost Mage (Alliance)                    level difficulty-colored, faction colored
-iLvl 639 • DPS
+iLvl 639 • DPS                                    "iLvl ..." while the inspect is pending
 M+ 2845 • Best +14                                one line, Blizzard rating color
 PvP 2100 (Solo Shuffle)
 Mount: {icon} Swift Spectral Tiger                source line if not collected
