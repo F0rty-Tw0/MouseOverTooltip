@@ -113,20 +113,6 @@ local function applyHeader(tooltip, unit, guid, db, specName)
   freedCount = PlayerHeader.ClearNoise(levelIndex + 1, numLines, className, freed, freedCount)
 end
 
-local function wantsHeader(db)
-  return db.colorName
-    or db.showGuild
-    or db.showLevel
-    or db.showRace
-    or db.showClass
-    or db.showFaction
-    or db.showTitle
-    or db.showRealmStatus
-    or db.showRaidIcon
-    or db.showDeadTag
-    or db.showFriend
-end
-
 local function inspectLine(entry, db, roleText)
   local ilvl = db.showItemLevel and entry and entry.ilvl
   if not ilvl then
@@ -168,7 +154,7 @@ function PlayerLines.Apply(tooltip, unit, guid, db)
     end
   end
   local specName, roleText = specInfo(entry, db)
-  if wantsHeader(db) then
+  if PlayerHeader.Wanted(db) then
     applyHeader(tooltip, unit, guid, db, specName)
   end
   add(tooltip, inspectLine(entry, db, roleText))

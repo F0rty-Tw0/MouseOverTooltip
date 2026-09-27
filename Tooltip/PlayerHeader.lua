@@ -151,10 +151,24 @@ function PlayerHeader.Level(unit, db, classCode, className, specName)
   return flush(" ")
 end
 
+function PlayerHeader.Wanted(db)
+  return db.colorName
+    or db.showGuild
+    or db.showLevel
+    or db.showRace
+    or db.showClass
+    or db.showFaction
+    or db.showTitle
+    or db.showRealmStatus
+    or db.showRaidIcon
+    or db.showDeadTag
+    or db.showFriend
+end
+
 local noise
--- Clears Blizzard's faction, PvP and "Spec Class" lines under the level line.
--- Appends the cleared indexes to `freed` after `freedCount`; returns the new count.
-function PlayerHeader.ClearNoise(fromIndex, numLines, className, freed, freedCount)
+local suffixClass, classSuffix
+-- Blizzard's faction, PvP and "Spec Class" lines, which the level line replaces.
+function PlayerHeader.IsNoise(text, className)
   if not noise then
     noise = {}
     for _, key in ipairs({ "FACTION_ALLIANCE", "FACTION_HORDE", "FACTION_NEUTRAL", "PVP", "PVP_ENABLED" }) do
@@ -163,10 +177,24 @@ function PlayerHeader.ClearNoise(fromIndex, numLines, className, freed, freedCou
       end
     end
   end
-  local classSuffix = className and (" " .. className)
+  if noise[text] or text == className then
+    return true
+  end
+  if not className then
+    return false
+  end
+  if className ~= suffixClass then
+    suffixClass, classSuffix = className, " " .. className
+  end
+  return sub(text, -#classSuffix) == classSuffix
+end
+
+-- Clears noise lines under the level line.
+-- Appends the cleared indexes to `freed` after `freedCount`; returns the new count.
+function PlayerHeader.ClearNoise(fromIndex, numLines, className, freed, freedCount)
   for index = fromIndex, numLines do
     local text = Lines.Text(index)
-    if text and (noise[text] or text == className or (classSuffix and sub(text, -#classSuffix) == classSuffix)) then
+    if text and PlayerHeader.IsNoise(text, className) then
       Lines.Set(index, nil)
       freedCount = freedCount + 1
       freed[freedCount] = index

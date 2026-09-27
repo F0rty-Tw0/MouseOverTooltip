@@ -36,13 +36,17 @@ end
 
 -- "Level %s" -> "^Level .+"; built on first use so locale globals exist.
 local levelPattern
-function Lines.FindLevel(numLines)
+function Lines.IsLevel(text)
   if not levelPattern then
     levelPattern = "^" .. gsub(_G.TOOLTIP_UNIT_LEVEL or "Level %s", "%%s", ".+")
   end
+  return find(text, levelPattern) ~= nil
+end
+
+function Lines.FindLevel(numLines)
   for index = 2, numLines do
     local text = Lines.Text(index)
-    if text and find(text, levelPattern) then
+    if text and Lines.IsLevel(text) then
       return index
     end
   end
