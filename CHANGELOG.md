@@ -6,6 +6,8 @@ All releases: **0.1.x (current)**
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-27
+
 - First release: a clean, lightweight mouseover tooltip in the familiar Blizzard look.
 - Players show a tidy header: class-colored name, guild and rank in soft blue, then level, race, class and faction on one line. Each part can be switched off on its own, and the lines below move up to close the gap.
 - Item level of other players in epic purple, fetched quietly in the background and filled in as soon as it arrives.
@@ -22,3 +24,4 @@ All releases: **0.1.x (current)**
 - All settings fit on one two-column page in Options > AddOns > MouseOverTooltip; the Defaults button resets them. Type /mot to open them.
 - Minimap button (drag it around the minimap) and an AddOn Compartment entry on Retail.
 - Works on Retail, every Classic flavor and WoW: Forever. Features the game version doesn't support are simply hidden.
+
