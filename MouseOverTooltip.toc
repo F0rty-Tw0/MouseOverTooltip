@@ -1,0 +1,57 @@
+## Interface: 120100
+## Interface-Mainline: 120100
+## Interface-Forever: 16001
+## Interface-Vanilla: 11509
+## Interface-Classic: 11509
+## Interface-TBC: 20506
+## Interface-BCC: 20506
+## Interface-Wrath: 30403
+## Interface-WOTLKC: 30403
+## Interface-Cata: 40402
+## Interface-Mists: 50504
+## Interface-MoP: 50504
+## Title: MouseOverTooltip
+## Notes: Minimal mouseover unit tooltip: item level, M+ rating, mount, target and quest progress with the lowest CPU, memory and size.
+## Author: F0rty_tw0
+## Category: Tooltip
+## IconTexture: Interface\AddOns\MouseOverTooltip\Media\Icon
+## Version: v0.1.0
+## SavedVariables: MouseOverTooltipDB
+## AddonCompartmentFunc: MouseOverTooltip_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: MouseOverTooltip_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: MouseOverTooltip_OnAddonCompartmentLeave
+
+Core/FlavorCompat.lua
+Core/Constants.lua
+Core/Localization.lua
+Core/Secret.lua
+Core/Color.lua
+Core/SlashCommand.lua
+
+Settings/Defaults.lua
+Settings/SavedState.lua
+
+Data/InspectCache.lua
+Data/PvP.lua
+Data/MythicPlus.lua
+Data/Mount.lua
+Data/Group.lua
+Data/Friends.lua
+Data/Quest.lua
+Data/EnemyForces.lua
+
+Tooltip/Lines.lua
+Tooltip/UnitTags.lua
+Tooltip/PlayerHeader.lua
+Tooltip/PlayerLines.lua
+Tooltip/NpcLines.lua
+Tooltip/CombatHide.lua
+Tooltip/HealthBar.lua
+Tooltip/Border.lua
+Tooltip/Anchor.lua
+Tooltip/UnitTooltip.lua
+
+Settings/Panel.lua
+UI/MinimapButton.lua
+
+Bootstrap.lua
