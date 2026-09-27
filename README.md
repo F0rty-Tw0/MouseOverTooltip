@@ -1,6 +1,10 @@
+<p align="center"><img src=".github/assets/logo.png" alt="MouseOverTooltip logo" width="128"></p>
+
 <h1 align="center">MouseOverTooltip</h1>
 
 <p align="center"><b>The mouseover tooltip you already know, with the info you actually want, and nothing that slows your game down.</b></p>
+
+<p align="center"><img src=".github/assets/tooltip-mount-source.png" alt="Player tooltip with item level, the mount they ride and where to get it"></p>
 
 ## Why players install it
 
@@ -9,11 +13,16 @@
 - **It stays out of the way.** Blizzard's tooltip look, no extra frames, no libraries. Disabled options do no work at all.
 - **Hide tooltips in combat** and hold Shift when you do want one.
 
+<p align="center"><img src=".github/assets/npc-tooltip.png" alt="NPC tooltip in the Blizzard look, with lines from another addon kept in place"></p>
+<p align="center"><sub>Plays nice with other addons: the lines on the right come from AllTheThings.</sub></p>
+
 ## Settings
 
 Options > AddOns > MouseOverTooltip, or type `/mot`. Every line can be turned on or off. The panel's **Defaults** button resets everything.
 
 The minimap button opens the same panel; drag it to move it around the minimap.
+
+![All MouseOverTooltip settings on one page](.github/assets/settings.png)
 
 ## Game versions
 
