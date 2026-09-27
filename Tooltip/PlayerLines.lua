@@ -148,7 +148,7 @@ local function addMount(tooltip, unit, db)
   local line, source = Mount.Line(unit, db)
   add(tooltip, line)
   if source then
-    emit(tooltip, "    " .. source, SOURCE_R, SOURCE_G, SOURCE_B, true)
+    emit(tooltip, source, SOURCE_R, SOURCE_G, SOURCE_B, true)
   end
 end
 

@@ -216,6 +216,27 @@ local function test_disabled_mount_makes_no_aura_or_journal_calls()
   Assert.equal(calls, 1, "enabled mount scans auras")
 end
 
+local function test_mount_source_line_aligns_with_other_lines()
+  local auras, journal = _G.C_UnitAuras.GetAuraDataByIndex, _G.C_MountJournal
+  _G.C_UnitAuras.GetAuraDataByIndex = function(_unit, index)
+    return index == 1 and { spellId = 42777 } or nil
+  end
+  _G.C_MountJournal = {
+    GetMountFromSpell = function()
+      return 7
+    end,
+    GetMountInfoByID = function()
+      return "Swift Spectral Tiger", 42777, 132242, false, true, 0, false, false, nil, false, false
+    end,
+    GetMountInfoExtraByID = function()
+      return 1, "desc", "|cFFFFD200Vendor:|r Lindormi"
+    end,
+  }
+  hover(with({ showMount = true, showMountSource = true }))
+  _G.C_UnitAuras.GetAuraDataByIndex, _G.C_MountJournal = auras, journal
+  Assert.contains(W.AllText(), "\nVendor: Lindormi", "source line starts at the left edge")
+end
+
 local function test_target_and_targeted_by_lines()
   hover(with({ showTarget = true }))
   Assert.notContains(W.AllText(), "Target:")
@@ -272,6 +293,7 @@ return function()
   test_disabled_inspect_features_never_inspect()
   test_mythic_plus_line_and_disabled_path()
   test_disabled_mount_makes_no_aura_or_journal_calls()
+  test_mount_source_line_aligns_with_other_lines()
   test_target_and_targeted_by_lines()
   test_raid_icon_dead_and_friend_tags_on_name()
   test_secret_name_leaves_name_line_untouched()
