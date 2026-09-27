@@ -1,0 +1,24 @@
+# Changelog
+
+Player-friendly release notes for MouseOverTooltip. This file covers the current 0.x series; older series live in [archive/changelog/](archive/changelog/).
+
+All releases: **0.1.x (current)**
+
+## [Unreleased]
+
+- First release: a clean, lightweight mouseover tooltip in the familiar Blizzard look.
+- Players show a tidy header: class-colored name, guild and rank, then level, race, class and faction on one line. Each part can be switched off on its own, and the lines below move up to close the gap.
+- Item level of other players in epic purple, fetched quietly in the background and filled in as soon as it arrives.
+- Item level is only looked up once your cursor rests on a player, so sweeping across a crowded city sends no extra requests.
+- Info lines use gold labels and fill the space Blizzard leaves empty, so the tooltip stays compact.
+- The tooltip fades away normally when you move off a unit, even in combat.
+- Mythic+ rating in Blizzard's rating color, plus the highest timed key.
+- The mount a player is riding, with a check mark if you already own it.
+- Quest mobs show how many are left for each objective, and finished objectives turn green.
+- Optional extras, all off by default: spec and role, realm and AFK/DND status, player titles, your-guild highlight, friend and Battle.net tags, PvP rating, target and "targeted by" lines, elite/rare/boss labels, reaction text, pet owners, Mythic+ enemy forces (with Mythic Dungeon Tools), health numbers on the bar, raid markers, dead/ghost tags and colored borders for units and items.
+- The tooltip follows your cursor (can be turned off).
+- Hide tooltips in combat for world units, unit frames or both, and hold Shift to peek.
+- Its own icon in the AddOns list and on the minimap button: a tooltip with the familiar gauntlet cursor hovering over it.
+- All settings fit on one two-column page in Options > AddOns > MouseOverTooltip; the Defaults button resets them. Type /mot to open them.
+- Minimap button (drag it around the minimap) and an AddOn Compartment entry on Retail.
+- Works on Retail, every Classic flavor and WoW: Forever. Features the game version doesn't support are simply hidden.
