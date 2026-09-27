@@ -4,7 +4,7 @@ if type(ns) ~= "table" then
 end
 
 local Constants = {
-  VERSION = "v0.1.0",
+  VERSION = "v1.0.0",
 
   -- Inspect cache: session-only, never persisted.
   INSPECT_CACHE_MAX = 100,
