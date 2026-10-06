@@ -4,6 +4,7 @@ if type(ns) ~= "table" then
 end
 
 local Color = ns.Color or require("MouseOverTooltip.Core.Color")
+local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
 local Friends = ns.Friends or require("MouseOverTooltip.Data.Friends")
 local Lines = ns.TooltipLines or require("MouseOverTooltip.Tooltip.Lines")
 local Localization = ns.Localization or require("MouseOverTooltip.Core.Localization")
@@ -67,11 +68,23 @@ local function statusTag(unit)
   return nil
 end
 
+local function surnameSeparator()
+  local consts = _G.Constants and _G.Constants.CharacterNameSeparatorConsts
+  return consts and consts.CHARACTERNAME_SURNAME_SEPARATOR or " "
+end
+
 -- Name line; returns the realm for cross-realm players (nil otherwise).
 function PlayerHeader.Name(unit, guid, db, classCode)
   local name, realm = Secret.Clean2(_G.UnitName(unit))
   if not name then
     return nil
+  end
+  -- WoW: Forever's UnitName returns (name, surname) and has no realm.
+  if FlavorCompat.isForever then
+    if realm and realm ~= "" then
+      name = name .. surnameSeparator() .. realm
+    end
+    realm = nil
   end
   if db.showTitle then
     local title = titleOf(unit, name)
