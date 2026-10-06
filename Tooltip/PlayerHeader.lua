@@ -40,12 +40,16 @@ local function flush(separator)
   return text
 end
 
-local function titleOf(unit, name)
+-- `firstName` is the Forever fallback for a PvP name that leaves out the surname.
+local function titleOf(unit, name, firstName)
   local pvpName = Secret.Clean(_G.UnitPVPName(unit))
   if not pvpName then
     return nil
   end
   local first, last = find(pvpName, name, 1, true)
+  if not first and firstName then
+    first, last = find(pvpName, firstName, 1, true)
+  end
   if not first then
     return nil
   end
@@ -80,14 +84,16 @@ function PlayerHeader.Name(unit, guid, db, classCode)
     return nil
   end
   -- WoW: Forever's UnitName returns (name, surname) and has no realm.
+  local firstName
   if FlavorCompat.isForever then
     if realm and realm ~= "" then
+      firstName = name
       name = name .. surnameSeparator() .. realm
     end
     realm = nil
   end
   if db.showTitle then
-    local title = titleOf(unit, name)
+    local title = titleOf(unit, name, firstName)
     name = title and (name .. " - " .. title) or name
   end
   count = 0

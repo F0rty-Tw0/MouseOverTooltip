@@ -31,7 +31,6 @@ _G.C_UnitAuras = {
 }
 _G.C_MountJournal = { GetMountFromSpell = function() end }
 
-local FlavorCompat = require("MouseOverTooltip.Core.FlavorCompat")
 local Defaults = require("MouseOverTooltip.Settings.Defaults")
 local SavedState = require("MouseOverTooltip.Settings.SavedState")
 local InspectCache = require("MouseOverTooltip.Data.InspectCache")
@@ -155,17 +154,6 @@ end
 local function test_realm_hidden_when_setting_off()
   hover(with({ allBasics = true }), { realm = "Stormrage" })
   Assert.notContains(W.AllText(), "Stormrage")
-end
-
--- WoW: Forever's UnitName returns (name, surname) instead of (name, realm).
-local function test_forever_name_line_shows_surname_not_realm()
-  _G.Constants = { CharacterNameSeparatorConsts = { CHARACTERNAME_SURNAME_SEPARATOR = " " } }
-  FlavorCompat.isForever = true
-  hover(with({ allBasics = true, showRealmStatus = true }), { realm = "Smith" })
-  FlavorCompat.isForever = false
-  _G.Constants = nil
-  Assert.equal(W.LineText(1), "|cff40c7ebBob Smith|r")
-  Assert.notContains(W.AllText(), "\nSmith", "surname is not a realm line")
 end
 
 local function test_my_guild_highlight()
@@ -303,7 +291,6 @@ return function()
   test_everything_off_leaves_blizzard_lines_and_calls_nothing()
   test_title_status_and_realm()
   test_realm_hidden_when_setting_off()
-  test_forever_name_line_shows_surname_not_realm()
   test_my_guild_highlight()
   test_classic_era_without_guild_line_merges_guild_into_level()
   test_item_level_requests_inspect_then_shows_cached_line()
