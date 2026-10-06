@@ -42,10 +42,15 @@ local function test_forever_title_from_pvp_name_with_first_name_only()
   Assert.equal((foreverName(" ", { pvpName = "Private Bob" }, { showTitle = true })), "Bob Smith - Private")
 end
 
+local function test_forever_untitled_pvp_name_adds_no_title()
+  Assert.equal((foreverName(" ", { pvpName = "Bob" }, { showTitle = true })), "Bob Smith")
+end
+
 return function()
   test_forever_joins_surname_with_blizzard_separator()
   test_forever_without_separator_constant_uses_space()
   test_forever_empty_surname_adds_no_separator()
   test_forever_title_from_pvp_name_with_surname()
   test_forever_title_from_pvp_name_with_first_name_only()
+  test_forever_untitled_pvp_name_adds_no_title()
 end
