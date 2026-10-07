@@ -48,6 +48,7 @@ read_globals = {
   "Enum",
   "Settings",
   "CreateSettingsListSectionHeaderInitializer",
+  "MinimalSliderWithSteppersMixin",
 
   -- Namespaced APIs
   "C_BattleNet",

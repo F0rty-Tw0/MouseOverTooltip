@@ -3,11 +3,14 @@ if type(ns) ~= "table" then
   ns = {}
 end
 
+local Constants = ns.Constants or require("MouseOverTooltip.Core.Constants")
 local Defaults = ns.SettingsDefaults or require("MouseOverTooltip.Settings.Defaults")
 local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
 local Localization = ns.Localization or require("MouseOverTooltip.Core.Localization")
 
-local CATEGORY_NAME = "MouseOverTooltip"
+local floor = math.floor
+
+local CATEGORY_NAME = Constants.TITLE
 local LEFT = 16
 local COLUMN_WIDTH = 310
 local TOP = -16
@@ -16,6 +19,11 @@ local HEADER_HEIGHT = 26
 local ROW_HEIGHT = 22
 local BOX_SIZE = 22
 local LABEL_WIDTH = 250
+local SLIDER_TEMPLATE = "MinimalSliderWithSteppersTemplate"
+local SLIDER_ROW_HEIGHT = ROW_HEIGHT + 4
+local SLIDER_LABEL_WIDTH = 14
+local SLIDER_WIDTH = 110
+local SLIDER_HALF = 170
 
 -- Two-column canvas page in Options > AddOns, so every setting fits on one
 -- screen. Widgets are built on first open; until then only the empty canvas
@@ -24,6 +32,7 @@ local Panel = {}
 
 local category
 local boxes = {}
+local sliders = {}
 
 local function available(entry)
   return not entry.requires or FlavorCompat[entry.requires]
@@ -54,6 +63,62 @@ local function addCheckbox(frame, entry, x, y, db, onChanged)
   boxes[key] = box
 end
 
+local function round(value)
+  return floor(value + 0.5)
+end
+
+local function showHint(track)
+  local tooltip = _G.GameTooltip
+  tooltip:SetOwner(track, "ANCHOR_RIGHT")
+  tooltip:SetText(track.hint)
+  tooltip:Show()
+end
+
+local function hideHint()
+  _G.GameTooltip:Hide()
+end
+
+-- Value shows in the template's right label; step count = range, so 1 px steps.
+local function addSlider(frame, entry, x, y, db, onChanged)
+  local mixin = _G.MinimalSliderWithSteppersMixin
+  local slider = _G.CreateFrame("Frame", nil, frame, SLIDER_TEMPLATE)
+  slider:SetSize(SLIDER_WIDTH, ROW_HEIGHT)
+  slider:SetPoint("TOPLEFT", frame, "TOPLEFT", x + SLIDER_LABEL_WIDTH, y)
+  slider.label = addText(frame, "GameFontHighlight", Localization.Text(entry.label), x, y - 5)
+  local key = entry.key
+  slider:Init(db[key], entry.min, entry.max, entry.max - entry.min, {
+    [mixin.Label.Right] = function(value)
+      return tostring(round(value))
+    end,
+  })
+  slider:RegisterCallback(mixin.Event.OnValueChanged, function(_owner, value)
+    value = round(value)
+    if db[key] ~= value then
+      db[key] = value
+      onChanged(key, value)
+    end
+  end, slider)
+  slider.Slider.hint = Localization.Text(entry.hint)
+  slider.Slider:HookScript("OnEnter", showHint)
+  slider.Slider:HookScript("OnLeave", hideHint)
+  sliders[key] = slider
+end
+
+-- Returns the y below the added row; a `sameRow` slider sits beside the
+-- previous one and leaves y alone.
+local function addSetting(frame, entry, x, y, db, onChanged)
+  if not entry.min then
+    addCheckbox(frame, entry, x, y, db, onChanged)
+    return y - ROW_HEIGHT
+  end
+  if entry.sameRow then
+    addSlider(frame, entry, x + SLIDER_HALF, y + SLIDER_ROW_HEIGHT, db, onChanged)
+    return y
+  end
+  addSlider(frame, entry, x, y, db, onChanged)
+  return y - SLIDER_ROW_HEIGHT
+end
+
 local function build(frame, db, onChanged)
   addText(frame, "GameFontNormalLarge", CATEGORY_NAME, LEFT, TOP)
   local x, y = LEFT, TOP - TITLE_HEIGHT
@@ -64,8 +129,7 @@ local function build(frame, db, onChanged)
       addText(frame, "GameFontNormal", Localization.Text(entry.header), x, y - 8)
       y = y - HEADER_HEIGHT
     elseif available(entry) then
-      addCheckbox(frame, entry, x, y, db, onChanged)
-      y = y - ROW_HEIGHT
+      y = addSetting(frame, entry, x, y, db, onChanged)
     end
   end
 end
@@ -73,6 +137,9 @@ end
 local function refresh(db)
   for key, box in pairs(boxes) do
     box:SetChecked(db[key])
+  end
+  for key, slider in pairs(sliders) do
+    slider:SetValue(db[key])
   end
 end
 

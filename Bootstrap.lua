@@ -4,6 +4,7 @@ if type(ns) ~= "table" then
 end
 
 local Anchor = ns.Anchor or require("MouseOverTooltip.Tooltip.Anchor")
+local Constants = ns.Constants or require("MouseOverTooltip.Core.Constants")
 local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
 local InspectCache = ns.InspectCache or require("MouseOverTooltip.Data.InspectCache")
 local MinimapButton = ns.MinimapButton or require("MouseOverTooltip.UI.MinimapButton")
@@ -55,7 +56,7 @@ _G.MouseOverTooltip_OnAddonCompartmentClick = openSettings
 function _G.MouseOverTooltip_OnAddonCompartmentEnter(_, button)
   local tooltip = _G.GameTooltip
   tooltip:SetOwner(button, "ANCHOR_LEFT")
-  tooltip:SetText(ADDON_NAME)
+  tooltip:SetText(Constants.TITLE)
   tooltip:Show()
 end
 
