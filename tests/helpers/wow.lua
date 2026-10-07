@@ -118,6 +118,24 @@ local function newWidget(W, name)
   return widget
 end
 
+-- MinimalSliderWithSteppersTemplate: SetValue fires the registered
+-- OnValueChanged callback like the real template does.
+local function addSliderMethods(W, frame)
+  frame.Slider = newWidget(W)
+  function frame:Init(value, minValue, maxValue, steps, formatters)
+    self.value, self.min, self.max, self.steps, self.formatters = value, minValue, maxValue, steps, formatters
+  end
+  function frame:RegisterCallback(_event, fn, owner)
+    self.callback, self.callbackOwner = fn, owner
+  end
+  function frame:SetValue(value)
+    self.value = value
+    if self.callback then
+      self.callback(self.callbackOwner, value)
+    end
+  end
+end
+
 local function installTooltip(W)
   local tip = newWidget(W, "GameTooltip")
   tip.shown = false
@@ -147,11 +165,20 @@ local function installTooltip(W)
   function tip:GetItem()
     return W.tooltipItemName, W.tooltipItemLink
   end
-  function tip:SetOwner(owner, anchor)
-    self.owner, self.anchor = owner, anchor
+  function tip:SetOwner(owner, anchor, x, y)
+    self.owner, self.anchor, self.offsetX, self.offsetY = owner, anchor, x, y
   end
   function tip:GetOwner()
     return self.owner
+  end
+  function tip:SetAnchorType(anchor, x, y)
+    self.anchor, self.offsetX, self.offsetY = anchor, x, y
+  end
+  function tip:GetAnchorType()
+    return self.anchor
+  end
+  function tip:GetWidth()
+    return self.width or 0
   end
   function tip:RefreshData()
     W.calls.RefreshData = (W.calls.RefreshData or 0) + 1
@@ -237,8 +264,16 @@ function Wow.Install()
     end,
   })
 
-  def("CreateFrame", function(_frameType, name)
-    return newWidget(W, name)
+  rawset(_G, "MinimalSliderWithSteppersMixin", {
+    Event = { OnValueChanged = "OnValueChanged" },
+    Label = { Left = 1, Right = 2, Top = 3, Min = 4, Max = 5 },
+  })
+  def("CreateFrame", function(_frameType, name, _parent, template)
+    local frame = newWidget(W, name)
+    if template == "MinimalSliderWithSteppersTemplate" then
+      addSliderMethods(W, frame)
+    end
+    return frame
   end)
   def("hooksecurefunc", function(target, name, hook)
     if type(target) == "string" then

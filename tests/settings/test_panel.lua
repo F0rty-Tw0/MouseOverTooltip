@@ -25,10 +25,11 @@ local SavedState = require("MouseOverTooltip.Settings.SavedState")
 local Panel = require("MouseOverTooltip.Settings.Panel")
 
 local db = SavedState.Initialize(nil)
-local changes = {}
+local changes, counts = {}, {}
 local framesBefore = #W.frames
 Panel.Register(db, function(key, value)
   changes[key] = value
+  counts[key] = (counts[key] or 0) + 1
 end)
 local framesAtRegister = #W.frames
 
@@ -79,14 +80,62 @@ local function test_click_saves_and_forwards_change()
   Assert.equal(changes.minimapButton, false)
 end
 
-local function test_defaults_button_restores_and_refreshes()
+local function fireSlider(slider, value)
+  slider.callback(slider.callbackOwner, value)
+end
+
+local function test_offset_sliders_built_with_one_pixel_steps()
+  local byLabel = boxes()
+  local x = byLabel["X"]
+  Assert.equal(x.steps, 200)
+  Assert.equal(x.min, -100)
+  Assert.equal(x.max, 100)
+  Assert.equal(x.value, 0)
+  Assert.equal(x.formatters[_G.MinimalSliderWithSteppersMixin.Label.Right](12.4), "12")
+  Assert.equal(byLabel["Y"].steps, 200)
+end
+
+local function test_y_slider_shares_row_right_of_x()
+  local byLabel = boxes()
+  Assert.equal(byLabel["Y"].point[5], byLabel["X"].point[5])
+  Assert.equal(byLabel["Y"].point[4] > byLabel["X"].point[4], true)
+end
+
+local function test_slider_change_saves_and_forwards()
+  fireSlider(boxes()["X"], 12.4)
+  Assert.equal(db.cursorOffsetX, 12)
+  Assert.equal(changes.cursorOffsetX, 12)
+end
+
+local function test_same_slider_value_does_not_forward()
   changes = {}
+  fireSlider(boxes()["X"], 12)
+  Assert.equal(changes.cursorOffsetX, nil)
+end
+
+local function test_slider_hover_shows_hint()
+  local track = boxes()["X"].Slider
+  track:Fire("OnEnter")
+  Assert.equal(W.tooltip.shown, true)
+  Assert.equal(W.tooltip:GetText(), "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'.")
+  track:Fire("OnLeave")
+  Assert.equal(W.tooltip.shown, false)
+end
+
+local function test_defaults_button_restores_and_refreshes()
+  local x = boxes()["X"]
+  x:SetValue(30)
+  Assert.equal(db.cursorOffsetX, 30)
+  changes, counts = {}, {}
   db.showTarget = true
   canvas:OnDefault()
   Assert.equal(db.showTarget, false)
   Assert.equal(db.minimapButton, true)
   Assert.equal(changes.minimapButton, true, "change forwarded so the button reappears")
   Assert.equal(boxes()["Minimap button"].checked, true)
+  Assert.equal(db.cursorOffsetX, 0)
+  Assert.equal(x.value, 0, "slider display reset")
+  Assert.equal(counts.cursorOffsetX, 1, "refresh does not re-forward the reset")
 end
 
 local function test_open_goes_to_category()
@@ -100,6 +149,11 @@ return function()
   test_checkbox_shows_saved_value_and_hides_missing_apis()
   test_second_column_sits_right_of_first()
   test_click_saves_and_forwards_change()
+  test_offset_sliders_built_with_one_pixel_steps()
+  test_y_slider_shares_row_right_of_x()
+  test_slider_change_saves_and_forwards()
+  test_same_slider_value_does_not_forward()
+  test_slider_hover_shows_hint()
   test_defaults_button_restores_and_refreshes()
   test_open_goes_to_category()
 end

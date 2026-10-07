@@ -37,9 +37,43 @@ local function test_unknown_saved_keys_are_dropped()
   Assert.equal(db.removedSetting, nil)
 end
 
+local function test_offset_defaults_to_zero()
+  local db = SavedState.Initialize(nil)
+  Assert.equal(db.cursorOffsetX, 0)
+  Assert.equal(db.cursorOffsetY, 0)
+end
+
+local function test_saved_offset_kept()
+  local db = SavedState.Initialize({ cursorOffsetX = 12, cursorOffsetY = -7 })
+  Assert.equal(db.cursorOffsetX, 12)
+  Assert.equal(db.cursorOffsetY, -7)
+end
+
+local function test_offset_clamped()
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = 250 }).cursorOffsetX, 100)
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = -250 }).cursorOffsetX, -100)
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = math.huge }).cursorOffsetX, 100)
+end
+
+local function test_offset_rounded()
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = 12.6 }).cursorOffsetX, 13)
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = -0.5 }).cursorOffsetX, 0)
+end
+
+local function test_offset_bad_type_falls_back()
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = "12" }).cursorOffsetX, 0)
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = 0 / 0 }).cursorOffsetX, 0)
+  Assert.equal(SavedState.Initialize({ cursorOffsetX = true }).cursorOffsetX, 0)
+end
+
 return function()
   test_new_install_gets_every_default()
   test_saved_choices_survive_initialize()
   test_spec_defaults_for_key_settings()
   test_unknown_saved_keys_are_dropped()
+  test_offset_defaults_to_zero()
+  test_saved_offset_kept()
+  test_offset_clamped()
+  test_offset_rounded()
+  test_offset_bad_type_falls_back()
 end

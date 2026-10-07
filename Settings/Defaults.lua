@@ -6,6 +6,11 @@ end
 -- One ordered list drives SavedVariables defaults and the options panel.
 -- `requires` names a FlavorCompat flag; the panel hides the row without it.
 -- `{ column = 2 }` starts the panel's right column.
+-- `min`/`max` make a numeric slider setting; `sameRow` puts it beside the
+-- previous slider.
+local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
+local OFFSET_LIMIT = 100
+
 local Defaults = {
   list = {
     { header = "Player header" },
@@ -46,6 +51,16 @@ local Defaults = {
 
     { header = "Visuals" },
     { key = "followCursor", default = true, label = "Tooltip follows cursor" },
+    { key = "cursorOffsetX", default = 0, min = -OFFSET_LIMIT, max = OFFSET_LIMIT, label = "X", hint = OFFSET_HINT },
+    {
+      key = "cursorOffsetY",
+      default = 0,
+      min = -OFFSET_LIMIT,
+      max = OFFSET_LIMIT,
+      label = "Y",
+      hint = OFFSET_HINT,
+      sameRow = true,
+    },
     { key = "healthText", default = false, label = "Health text on bar" },
     { key = "hideHealthBar", default = false, label = "Hide health bar" },
     { key = "showRaidIcon", default = false, label = "Raid marker icon" },
