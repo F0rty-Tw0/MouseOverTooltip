@@ -3,11 +3,12 @@ if type(ns) ~= "table" then
   ns = {}
 end
 
+local Constants = ns.Constants or require("MouseOverTooltip.Core.Constants")
 local Defaults = ns.SettingsDefaults or require("MouseOverTooltip.Settings.Defaults")
 local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
 local Localization = ns.Localization or require("MouseOverTooltip.Core.Localization")
 
-local CATEGORY_NAME = "MouseOverTooltip"
+local CATEGORY_NAME = Constants.TITLE
 local LEFT = 16
 local COLUMN_WIDTH = 310
 local TOP = -16

@@ -5,6 +5,9 @@ end
 
 local Constants = {
   VERSION = "v1.0.1",
+  -- Player-visible name; the folder, saved variables and globals keep
+  -- "MouseOverTooltip" so existing settings carry over.
+  TITLE = "Mouseover Tooltip",
 
   -- Inspect cache: session-only, never persisted.
   INSPECT_CACHE_MAX = 100,

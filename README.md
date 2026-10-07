@@ -1,6 +1,6 @@
-<p align="center"><img src=".github/assets/logo.png" alt="MouseOverTooltip logo" width="128"></p>
+<p align="center"><img src=".github/assets/logo.png" alt="Mouseover Tooltip logo" width="128"></p>
 
-<h1 align="center">MouseOverTooltip</h1>
+<h1 align="center">Mouseover Tooltip</h1>
 
 <p align="center"><b>The mouseover tooltip you already know, with the info you actually want, and nothing that slows your game down.</b></p>
 
@@ -18,11 +18,11 @@
 
 ## Settings
 
-Options > AddOns > MouseOverTooltip, or type `/mot`. Every line can be turned on or off. The panel's **Defaults** button resets everything.
+Options > AddOns > Mouseover Tooltip, or type `/mot`. Every line can be turned on or off. The panel's **Defaults** button resets everything.
 
 The minimap button opens the same panel; drag it to move it around the minimap.
 
-![All MouseOverTooltip settings on one page](.github/assets/settings.png)
+![All Mouseover Tooltip settings on one page](.github/assets/settings.png)
 
 ## Game versions
 

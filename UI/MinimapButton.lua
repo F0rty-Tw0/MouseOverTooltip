@@ -3,6 +3,7 @@ if type(ns) ~= "table" then
   ns = {}
 end
 
+local Constants = ns.Constants or require("MouseOverTooltip.Core.Constants")
 local Localization = ns.Localization or require("MouseOverTooltip.Core.Localization")
 
 local cos, sin, rad, deg = math.cos, math.sin, math.rad, math.deg
@@ -73,7 +74,7 @@ local function create(onClick)
   frame:SetScript("OnEnter", function(self)
     local tooltip = _G.GameTooltip
     tooltip:SetOwner(self, "ANCHOR_LEFT")
-    tooltip:SetText("MouseOverTooltip")
+    tooltip:SetText(Constants.TITLE)
     tooltip:AddLine(Localization.Text("Click to open settings. Drag to move."), 1, 1, 1)
     tooltip:Show()
   end)

@@ -43,7 +43,7 @@ local function boxes()
 end
 
 local function test_category_registered_under_addons()
-  Assert.equal(category.name, "MouseOverTooltip")
+  Assert.equal(category.name, "Mouseover Tooltip")
   Assert.equal(category.registered, true)
 end
 

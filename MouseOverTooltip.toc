@@ -10,7 +10,7 @@
 ## Interface-Cata: 40402
 ## Interface-Mists: 50504
 ## Interface-MoP: 50504
-## Title: MouseOverTooltip
+## Title: Mouseover Tooltip
 ## Notes: Minimal mouseover unit tooltip: item level, M+ rating, mount, target and quest progress with the lowest CPU, memory and size.
 ## Author: F0rty_tw0
 ## Category: Tooltip
