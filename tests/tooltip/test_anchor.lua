@@ -140,6 +140,18 @@ local function test_forbidden_parent_keeps_blizzard_anchor()
   Assert.equal(W.tooltip.anchor, "ANCHOR_NONE")
 end
 
+-- Every real frame has IsForbidden; a normal one must still follow the cursor.
+local function test_non_forbidden_parent_follows_cursor()
+  local frame = {
+    IsForbidden = function()
+      return false
+    end,
+  }
+  Anchor.Install({ followCursor = true, cursorOffsetX = 0, cursorOffsetY = 0 })
+  _G.GameTooltip_SetDefaultAnchor(W.tooltip, frame)
+  Assert.equal(W.tooltip.anchor, "ANCHOR_CURSOR")
+end
+
 local function test_no_on_update_script_is_ever_set()
   for _, frame in ipairs(W.frames) do
     Assert.equal(frame.scripts.OnUpdate, nil)
@@ -161,5 +173,6 @@ return function()
   test_follow_off_ignores_offsets()
   test_other_tooltips_are_left_alone()
   test_forbidden_parent_keeps_blizzard_anchor()
+  test_non_forbidden_parent_follows_cursor()
   test_no_on_update_script_is_ever_set()
 end
