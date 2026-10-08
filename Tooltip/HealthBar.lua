@@ -46,6 +46,14 @@ local function onValueChanged()
   text:Show()
 end
 
+-- For a tooltip whose unit is unknown: hides the bar, leaves the text's unit.
+function HealthBar.HideBar(db)
+  local bar = _G.GameTooltipStatusBar
+  if bar and db.hideHealthBar then
+    bar:Hide()
+  end
+end
+
 function HealthBar.Apply(db, unit)
   settings, shownUnit = db, unit
   local bar = _G.GameTooltipStatusBar

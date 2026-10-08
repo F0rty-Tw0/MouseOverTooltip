@@ -57,6 +57,10 @@ local function onDefaultAnchor(tooltip, parent)
   if not (settings.followCursor and tooltip == _G.GameTooltip) then
     return
   end
+  -- Nameplates are forbidden in instances; SetOwner on one throws from addon code.
+  if parent and parent.IsForbidden and parent:IsForbidden() then
+    return
+  end
   local x = (settings.cursorOffsetX ~= 0 or settings.cursorOffsetY ~= 0) and centeredOffsetX(tooltip)
   if not x then
     tooltip:SetOwner(parent, "ANCHOR_CURSOR")

@@ -47,6 +47,27 @@ local function test_targeted_by_solo_makes_no_unit_calls()
   Assert.equal(W.calls.UnitIsUnit, nil)
 end
 
+-- Secret existence: skip the target line instead of erroring.
+local function test_secret_target_existence_skips_line()
+  local amy = { name = "Amy", guid = "Player-2", isPlayer = true, classFile = "WARRIOR" }
+  W.units = { player = me, mouseover = boss, mouseovertarget = amy }
+  local marker = {}
+  local unitExists = _G.UnitExists
+  rawset(_G, "issecretvalue", function(v)
+    return v == marker
+  end)
+  rawset(_G, "UnitExists", function()
+    return marker
+  end)
+  package.loaded["Core.Secret"] = nil
+  package.loaded["Data.Group"] = nil
+  local SecretGroup = require("MouseOverTooltip.Data.Group")
+  Assert.equal(SecretGroup.Target("mouseover"), nil)
+  rawset(_G, "UnitExists", unitExists)
+  rawset(_G, "issecretvalue", nil)
+  package.loaded["Core.Secret"] = nil
+end
+
 return function()
   test_target_line_shows_you_marker()
   test_target_line_class_colors_players()
@@ -54,4 +75,5 @@ return function()
   test_targeted_by_lists_party_members_but_not_me()
   test_targeted_by_uses_raid_units_in_raid()
   test_targeted_by_solo_makes_no_unit_calls()
+  test_secret_target_existence_skips_line()
 end
