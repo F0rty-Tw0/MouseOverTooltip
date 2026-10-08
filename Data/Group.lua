@@ -44,7 +44,7 @@ end
 -- "<<YOU>>" when the unit targets you, else the colored target name.
 function Group.Target(unit)
   local target = targetTokens[unit]
-  if not _G.UnitExists(target) then
+  if not Secret.Clean(_G.UnitExists(target)) then
     return nil
   end
   if Secret.Clean(_G.UnitIsUnit(target, "player")) then
