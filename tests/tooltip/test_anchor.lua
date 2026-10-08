@@ -127,6 +127,19 @@ local function test_other_tooltips_are_left_alone()
   Assert.equal(other.anchor, "ANCHOR_NONE")
 end
 
+-- Nameplates are forbidden in instances; passing one to SetOwner from addon
+-- code throws "Attempt to access forbidden object".
+local function test_forbidden_parent_keeps_blizzard_anchor()
+  local forbidden = {
+    IsForbidden = function()
+      return true
+    end,
+  }
+  Anchor.Install({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  _G.GameTooltip_SetDefaultAnchor(W.tooltip, forbidden)
+  Assert.equal(W.tooltip.anchor, "ANCHOR_NONE")
+end
+
 local function test_no_on_update_script_is_ever_set()
   for _, frame in ipairs(W.frames) do
     Assert.equal(frame.scripts.OnUpdate, nil)
@@ -147,5 +160,6 @@ return function()
   test_secret_width_on_resize_keeps_last_offset()
   test_follow_off_ignores_offsets()
   test_other_tooltips_are_left_alone()
+  test_forbidden_parent_keeps_blizzard_anchor()
   test_no_on_update_script_is_ever_set()
 end
