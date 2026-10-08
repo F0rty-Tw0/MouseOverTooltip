@@ -91,6 +91,33 @@ local function test_combat_hide_hides_before_any_styling()
   W.inCombat = false
 end
 
+-- Mythic+ hands out the shown unit token as a secret; hiding the bar needs no unit.
+local function test_secret_unit_still_hides_health_bar()
+  local marker = {}
+  rawset(_G, "issecretvalue", function(v)
+    return v == marker
+  end)
+  package.loaded["Core.Secret"] = nil
+  for key in pairs(package.loaded) do
+    if string.find(key, "^Tooltip%.") then
+      package.loaded[key] = nil
+    end
+  end
+  local secretDb = SavedState.Initialize(nil)
+  secretDb.hideHealthBar = true
+  require("MouseOverTooltip.Tooltip.UnitTooltip").Install(secretDb)
+  local getUnit = W.tooltip.GetUnit
+  W.tooltip.GetUnit = function()
+    return nil, marker
+  end
+  _G.GameTooltipStatusBar:Show()
+  postCalls[2](W.tooltip)
+  W.tooltip.GetUnit = getUnit
+  rawset(_G, "issecretvalue", nil)
+  package.loaded["Core.Secret"] = nil
+  Assert.equal(_G.GameTooltipStatusBar.shown, false)
+end
+
 local function test_classic_hooks_tooltip_scripts()
   W = Wow.Install()
   W.scriptSupport.OnTooltipSetUnit = true
@@ -114,5 +141,6 @@ return function()
   test_inspect_result_refreshes_shown_tooltip()
   test_refresh_skipped_when_another_unit_is_shown()
   test_combat_hide_hides_before_any_styling()
+  test_secret_unit_still_hides_health_bar()
   test_classic_hooks_tooltip_scripts()
 end

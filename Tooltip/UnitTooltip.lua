@@ -25,6 +25,8 @@ local function onUnit(tooltip)
   end
   local unit = shownUnit(tooltip)
   if not unit then
+    -- Secret in Mythic+: still hide the bar and drop the last unit's health text.
+    HealthBar.Apply(settings, nil)
     return
   end
   -- Mouse already left: the tooltip is fading, and Show() would cancel the
