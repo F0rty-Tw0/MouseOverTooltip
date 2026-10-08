@@ -11,6 +11,7 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 - New X and Y offset sliders under "Tooltip follows cursor" to move the tooltip away from the mouse, one pixel per step.
 - Fixed: hovering enemy nameplates in dungeons and raids no longer causes a Lua error.
 - Fixed: player and target info that the game hides in dungeons and raids is now skipped instead of risking a Lua error.
+- Fixed: "Hide health bar" now works in Mythic+, and health text no longer shows the previous unit's health there.
 
 ## [1.0.1] - 2026-10-06
 
