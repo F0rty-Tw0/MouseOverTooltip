@@ -215,7 +215,7 @@ function InspectCache.Request(unit, guid)
     return
   end
   failedGuid = nil
-  if Secret.Clean(_G.UnitIsUnit(unit, "player")) then
+  if guid == Secret.Clean(_G.UnitGUID("player")) then
     readUnit(unit, guid, true)
     return
   end

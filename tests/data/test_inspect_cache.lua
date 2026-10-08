@@ -300,6 +300,28 @@ local function test_secret_self_check_still_inspects()
   package.loaded["Core.Secret"] = nil
 end
 
+-- The GUID is already known clean, so hovering yourself needs no inspect even
+-- when the "is this me" answer is secret.
+local function test_secret_self_check_reads_self_by_guid()
+  setup()
+  W.units.player = W.units.mouseover
+  local marker = {}
+  rawset(_G, "issecretvalue", function(v)
+    return v == marker
+  end)
+  rawset(_G, "UnitIsUnit", function()
+    return marker
+  end)
+  package.loaded["Core.Secret"] = nil
+  package.loaded["Data.InspectCache"] = nil
+  local InspectCache = require("MouseOverTooltip.Data.InspectCache")
+  InspectCache.Configure({})
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  Assert.equal(W.calls.NotifyInspect, nil)
+  rawset(_G, "issecretvalue", nil)
+  package.loaded["Core.Secret"] = nil
+end
+
 return function()
   test_event_not_registered_until_first_request()
   test_request_inspects_and_caches_on_ready()
@@ -323,4 +345,5 @@ return function()
   test_repeat_hover_does_not_restart_pause()
   test_secret_guid_is_never_requested()
   test_secret_self_check_still_inspects()
+  test_secret_self_check_reads_self_by_guid()
 end
