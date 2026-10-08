@@ -25,8 +25,12 @@ local function onUnit(tooltip)
   end
   local unit = shownUnit(tooltip)
   if not unit then
-    -- Secret in Mythic+: still hide the bar and drop the last unit's health text.
-    HealthBar.Apply(settings, nil)
+    -- Secret in Mythic+: only the settings that need no unit apply.
+    if CombatHide.ShouldHide(tooltip, settings) then
+      tooltip:Hide()
+      return
+    end
+    HealthBar.HideBar(settings)
     return
   end
   -- Mouse already left: the tooltip is fading, and Show() would cancel the

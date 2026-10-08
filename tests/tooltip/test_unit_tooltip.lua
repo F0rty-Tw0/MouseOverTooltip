@@ -91,11 +91,13 @@ local function test_combat_hide_hides_before_any_styling()
   W.inCombat = false
 end
 
--- Mythic+ hands out the shown unit token as a secret; hiding the bar needs no unit.
-local function test_secret_unit_still_hides_health_bar()
-  local marker = {}
+-- Mythic+ hands out the shown unit token as a secret. These reload the tooltip
+-- modules so Secret sees the marker, then hover a unit whose token is secret.
+local SECRET_UNIT = {}
+
+local function installWithSecretUnit(settings)
   rawset(_G, "issecretvalue", function(v)
-    return v == marker
+    return v == SECRET_UNIT
   end)
   package.loaded["Core.Secret"] = nil
   for key in pairs(package.loaded) do
@@ -103,19 +105,80 @@ local function test_secret_unit_still_hides_health_bar()
       package.loaded[key] = nil
     end
   end
-  local secretDb = SavedState.Initialize(nil)
-  secretDb.hideHealthBar = true
-  require("MouseOverTooltip.Tooltip.UnitTooltip").Install(secretDb)
+  require("MouseOverTooltip.Tooltip.UnitTooltip").Install(settings)
+end
+
+local function hoverSecretUnit()
   local getUnit = W.tooltip.GetUnit
   W.tooltip.GetUnit = function()
-    return nil, marker
+    return nil, SECRET_UNIT
   end
-  _G.GameTooltipStatusBar:Show()
   postCalls[2](W.tooltip)
   W.tooltip.GetUnit = getUnit
+end
+
+local function clearSecrets()
   rawset(_G, "issecretvalue", nil)
   package.loaded["Core.Secret"] = nil
+end
+
+local function test_secret_unit_still_hides_health_bar()
+  local secretDb = SavedState.Initialize(nil)
+  secretDb.hideHealthBar = true
+  installWithSecretUnit(secretDb)
+  _G.GameTooltipStatusBar:Show()
+  hoverSecretUnit()
+  clearSecrets()
   Assert.equal(_G.GameTooltipStatusBar.shown, false)
+end
+
+-- The last styled token is usually "mouseover", which still names the hovered
+-- unit, so a secret token must not wipe the health text.
+local function test_secret_unit_keeps_health_text()
+  local secretDb = SavedState.Initialize(nil)
+  secretDb.healthText = true
+  installWithSecretUnit(secretDb)
+  local bar = _G.GameTooltipStatusBar
+  local text = { shown = true }
+  function text.SetPoint() end
+  function text:SetText(value)
+    self.value = value
+  end
+  function text:Show()
+    self.shown = true
+  end
+  function text:Hide()
+    self.shown = false
+  end
+  bar.CreateFontString = function()
+    return text
+  end
+  _G.UnitHealth = function(token)
+    return W.units[token] and W.units[token].health
+  end
+  _G.UnitHealthMax = function(token)
+    return W.units[token] and W.units[token].healthMax
+  end
+  hoverBob()
+  W.units.mouseover.health, W.units.mouseover.healthMax = 7000, 9000
+  hoverSecretUnit()
+  bar:Fire("OnValueChanged", 0.7)
+  clearSecrets()
+  Assert.equal(text.shown, true)
+  Assert.equal(text.value, "7000 / 9000")
+end
+
+local function test_secret_unit_still_combat_hides()
+  local secretDb = SavedState.Initialize(nil)
+  secretDb.hideWorldInCombat = true
+  installWithSecretUnit(secretDb)
+  W.inCombat = true
+  W.tooltip:SetOwner(_G.UIParent, "ANCHOR_NONE")
+  W.tooltip:Show()
+  hoverSecretUnit()
+  W.inCombat = false
+  clearSecrets()
+  Assert.equal(W.tooltip.shown, false)
 end
 
 local function test_classic_hooks_tooltip_scripts()
@@ -142,5 +205,7 @@ return function()
   test_refresh_skipped_when_another_unit_is_shown()
   test_combat_hide_hides_before_any_styling()
   test_secret_unit_still_hides_health_bar()
+  test_secret_unit_keeps_health_text()
+  test_secret_unit_still_combat_hides()
   test_classic_hooks_tooltip_scripts()
 end
