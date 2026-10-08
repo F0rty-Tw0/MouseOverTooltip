@@ -150,6 +150,7 @@ local function test_secret_unit_keeps_health_text()
   function text:Hide()
     self.shown = false
   end
+  local createFontString, unitHealth, unitHealthMax = bar.CreateFontString, _G.UnitHealth, _G.UnitHealthMax
   bar.CreateFontString = function()
     return text
   end
@@ -163,9 +164,18 @@ local function test_secret_unit_keeps_health_text()
   W.units.mouseover.health, W.units.mouseover.healthMax = 7000, 9000
   hoverSecretUnit()
   bar:Fire("OnValueChanged", 0.7)
+  bar.CreateFontString, _G.UnitHealth, _G.UnitHealthMax = createFontString, unitHealth, unitHealthMax
   clearSecrets()
   Assert.equal(text.shown, true)
   Assert.equal(text.value, "7000 / 9000")
+end
+
+local function test_secret_unit_keeps_health_bar_when_setting_off()
+  installWithSecretUnit(SavedState.Initialize(nil))
+  _G.GameTooltipStatusBar:Show()
+  hoverSecretUnit()
+  clearSecrets()
+  Assert.equal(_G.GameTooltipStatusBar.shown, true)
 end
 
 local function test_secret_unit_still_combat_hides()
@@ -206,6 +216,7 @@ return function()
   test_combat_hide_hides_before_any_styling()
   test_secret_unit_still_hides_health_bar()
   test_secret_unit_keeps_health_text()
+  test_secret_unit_keeps_health_bar_when_setting_off()
   test_secret_unit_still_combat_hides()
   test_classic_hooks_tooltip_scripts()
 end
