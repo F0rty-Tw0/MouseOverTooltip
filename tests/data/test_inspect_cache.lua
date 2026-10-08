@@ -280,6 +280,26 @@ local function test_secret_guid_is_never_requested()
   package.loaded["Core.Secret"] = nil
 end
 
+-- A secret "is this me" answer must not be read as yes: inspect as usual.
+local function test_secret_self_check_still_inspects()
+  setup()
+  local marker = {}
+  rawset(_G, "issecretvalue", function(v)
+    return v == marker
+  end)
+  rawset(_G, "UnitIsUnit", function()
+    return marker
+  end)
+  package.loaded["Core.Secret"] = nil
+  package.loaded["Data.InspectCache"] = nil
+  local InspectCache = require("MouseOverTooltip.Data.InspectCache")
+  InspectCache.Configure({})
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  Assert.equal(W.calls.NotifyInspect, 1)
+  rawset(_G, "issecretvalue", nil)
+  package.loaded["Core.Secret"] = nil
+end
+
 return function()
   test_event_not_registered_until_first_request()
   test_request_inspects_and_caches_on_ready()
@@ -302,4 +322,5 @@ return function()
   test_sweeping_past_player_never_inspects()
   test_repeat_hover_does_not_restart_pause()
   test_secret_guid_is_never_requested()
+  test_secret_self_check_still_inspects()
 end
