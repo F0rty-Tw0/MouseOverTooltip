@@ -7,9 +7,11 @@ end
 -- `requires` names a FlavorCompat flag; the panel hides the row without it.
 -- `{ column = 2 }` starts the panel's right column.
 -- `min`/`max` make a numeric slider setting; `sameRow` puts it beside the
--- previous slider.
+-- previous slider; `labelWidth` widens its label column; `suffix` follows
+-- the shown value.
 local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
 local OFFSET_LIMIT = 100
+local SCALE_HINT = "Size of the tooltip, in percent of normal."
 
 local Defaults = {
   list = {
@@ -60,6 +62,16 @@ local Defaults = {
       label = "Y",
       hint = OFFSET_HINT,
       sameRow = true,
+    },
+    {
+      key = "tooltipScale",
+      default = 100,
+      min = 50,
+      max = 200,
+      label = "Scale",
+      hint = SCALE_HINT,
+      labelWidth = 40,
+      suffix = "%",
     },
     { key = "healthText", default = false, label = "Health text on bar" },
     { key = "hideHealthBar", default = false, label = "Hide health bar" },
