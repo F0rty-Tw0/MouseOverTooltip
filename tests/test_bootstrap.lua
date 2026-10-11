@@ -13,6 +13,17 @@ _G.TooltipDataProcessor = {
     postCalls[dataType] = fn
   end,
 }
+local canvas
+_G.Settings = {
+  RegisterCanvasLayoutCategory = function(frame)
+    canvas = frame
+    return {}
+  end,
+  RegisterAddOnCategory = function() end,
+}
+function W.tooltip:SetScale(scale)
+  self.scale = scale
+end
 _G.MouseOverTooltipDB = { showTarget = true, removed = 1 }
 require("MouseOverTooltip.Bootstrap")
 
@@ -39,6 +50,20 @@ local function test_addon_loaded_initializes_everything_once()
   Assert.equal(type(postCalls[2]), "function", "unit hook installed")
   Assert.equal(_G.SLASH_MOUSEOVERTOOLTIP1, "/mot")
   Assert.equal(_G.MouseOverTooltipMinimapButton ~= nil, true, "minimap button shown by default")
+  Assert.equal(W.tooltip.scale, nil, "default scale costs no call")
+end
+
+local function test_scale_slider_rescales_tooltip()
+  canvas:Fire("OnShow")
+  local slider
+  for _, frame in ipairs(W.frames) do
+    if frame.label and frame.label:GetText() == "Scale" then
+      slider = frame
+    end
+  end
+  slider.callback(slider.callbackOwner, 150)
+  Assert.equal(W.tooltip.scale, 1.5)
+  Assert.equal(_G.MouseOverTooltipDB.tooltipScale, 150)
 end
 
 local function test_compartment_functions_are_global()
@@ -51,4 +76,5 @@ return function()
   test_other_addons_loading_are_ignored()
   test_addon_loaded_initializes_everything_once()
   test_compartment_functions_are_global()
+  test_scale_slider_rescales_tooltip()
 end
