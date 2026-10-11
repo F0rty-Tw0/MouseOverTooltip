@@ -42,6 +42,8 @@ read_globals = {
   "GameTooltip",
   "GameTooltipStatusBar",
   "GameTooltip_SetDefaultAnchor",
+  "ShoppingTooltip1",
+  "ShoppingTooltip2",
   "InspectFrame",
   "hooksecurefunc",
   "TooltipDataProcessor",
