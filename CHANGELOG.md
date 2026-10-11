@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+- New Scale slider under Visuals to make tooltips bigger or smaller (50–200%). Item comparison tooltips resize with it.
+
 ## [1.0.2] - 2026-10-08
 
 - The addon now shows as "Mouseover Tooltip" in the addon list, settings and minimap button. Your settings are kept.

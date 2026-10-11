@@ -11,6 +11,7 @@ local MinimapButton = ns.MinimapButton or require("MouseOverTooltip.UI.MinimapBu
 local Panel = ns.SettingsPanel or require("MouseOverTooltip.Settings.Panel")
 local PvP = ns.PvP or require("MouseOverTooltip.Data.PvP")
 local SavedState = ns.SavedState or require("MouseOverTooltip.Settings.SavedState")
+local Scale = ns.Scale or require("MouseOverTooltip.Tooltip.Scale")
 local SlashCommand = ns.SlashCommand or require("MouseOverTooltip.Core.SlashCommand")
 local UnitTooltip = ns.UnitTooltip or require("MouseOverTooltip.Tooltip.UnitTooltip")
 
@@ -40,9 +41,12 @@ function Bootstrap.Initialize(saved)
     ns.LineFilter.Install(db)
   end
   Anchor.Install(db)
+  Scale.Install(db)
   Panel.Register(db, function(key, value)
     if key == "minimapButton" then
       MinimapButton.SetShown(db, value, openSettings)
+    elseif key == "tooltipScale" then
+      Scale.Apply(value)
     end
   end)
   MinimapButton.SetShown(db, db.minimapButton, openSettings)

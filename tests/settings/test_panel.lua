@@ -101,6 +101,27 @@ local function test_y_slider_shares_row_right_of_x()
   Assert.equal(byLabel["Y"].point[4] > byLabel["X"].point[4], true)
 end
 
+local function test_scale_slider_uses_percent()
+  local s = boxes()["Scale"]
+  Assert.equal(s.min, 50)
+  Assert.equal(s.max, 200)
+  Assert.equal(s.steps, 150)
+  Assert.equal(s.value, 100)
+  Assert.equal(s.formatters[_G.MinimalSliderWithSteppersMixin.Label.Right](149.6), "150%")
+end
+
+local function test_scale_slider_clears_its_label()
+  local byLabel = boxes()
+  local s, x = byLabel["Scale"], byLabel["X"]
+  Assert.equal(s.point[4] - s.label.point[4], 40)
+  Assert.equal(x.point[4] - x.label.point[4], 14, "offset slider layout unchanged")
+end
+
+local function test_scale_slider_on_own_row_below_offsets()
+  local byLabel = boxes()
+  Assert.equal(byLabel["Scale"].point[5] < byLabel["X"].point[5], true)
+end
+
 local function test_slider_change_saves_and_forwards()
   fireSlider(boxes()["X"], 12.4)
   Assert.equal(db.cursorOffsetX, 12)
@@ -126,6 +147,7 @@ local function test_defaults_button_restores_and_refreshes()
   local x = boxes()["X"]
   x:SetValue(30)
   Assert.equal(db.cursorOffsetX, 30)
+  boxes()["Scale"]:SetValue(150)
   changes, counts = {}, {}
   db.showTarget = true
   canvas:OnDefault()
@@ -136,6 +158,9 @@ local function test_defaults_button_restores_and_refreshes()
   Assert.equal(db.cursorOffsetX, 0)
   Assert.equal(x.value, 0, "slider display reset")
   Assert.equal(counts.cursorOffsetX, 1, "refresh does not re-forward the reset")
+  Assert.equal(db.tooltipScale, 100)
+  Assert.equal(changes.tooltipScale, 100, "change forwarded so the tooltip resizes")
+  Assert.equal(boxes()["Scale"].value, 100, "slider display reset")
 end
 
 local function test_open_goes_to_category()
@@ -151,6 +176,9 @@ return function()
   test_click_saves_and_forwards_change()
   test_offset_sliders_built_with_one_pixel_steps()
   test_y_slider_shares_row_right_of_x()
+  test_scale_slider_uses_percent()
+  test_scale_slider_clears_its_label()
+  test_scale_slider_on_own_row_below_offsets()
   test_slider_change_saves_and_forwards()
   test_same_slider_value_does_not_forward()
   test_slider_hover_shows_hint()

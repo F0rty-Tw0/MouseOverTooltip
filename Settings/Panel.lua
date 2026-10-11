@@ -78,17 +78,18 @@ local function hideHint()
   _G.GameTooltip:Hide()
 end
 
--- Value shows in the template's right label; step count = range, so 1 px steps.
+-- Value shows in the template's right label; step count = range, so 1-unit steps.
 local function addSlider(frame, entry, x, y, db, onChanged)
   local mixin = _G.MinimalSliderWithSteppersMixin
   local slider = _G.CreateFrame("Frame", nil, frame, SLIDER_TEMPLATE)
   slider:SetSize(SLIDER_WIDTH, ROW_HEIGHT)
-  slider:SetPoint("TOPLEFT", frame, "TOPLEFT", x + SLIDER_LABEL_WIDTH, y)
+  slider:SetPoint("TOPLEFT", frame, "TOPLEFT", x + (entry.labelWidth or SLIDER_LABEL_WIDTH), y)
   slider.label = addText(frame, "GameFontHighlight", Localization.Text(entry.label), x, y - 5)
   local key = entry.key
+  local suffix = entry.suffix or ""
   slider:Init(db[key], entry.min, entry.max, entry.max - entry.min, {
     [mixin.Label.Right] = function(value)
-      return tostring(round(value))
+      return round(value) .. suffix
     end,
   })
   slider:RegisterCallback(mixin.Event.OnValueChanged, function(_owner, value)

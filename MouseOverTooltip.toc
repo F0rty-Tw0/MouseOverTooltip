@@ -51,6 +51,7 @@ Tooltip/CombatHide.lua
 Tooltip/HealthBar.lua
 Tooltip/Border.lua
 Tooltip/Anchor.lua
+Tooltip/Scale.lua
 Tooltip/UnitTooltip.lua
 
 Settings/Panel.lua
