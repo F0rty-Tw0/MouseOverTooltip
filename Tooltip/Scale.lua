@@ -4,7 +4,7 @@ if type(ns) ~= "table" then
 end
 
 -- Tooltip size. Set on load and on slider change only, never per hover, so
--- addons that set the scale themselves win.
+-- addons that set the scale later or on each show win.
 local Scale = {}
 
 local NORMAL_PERCENT = 100
