@@ -19,6 +19,15 @@ local function test_unbuilt_tab_builds_with_children_disabled()
   canvas:Fire("OnShow")
 end
 
+-- NPCs is never clicked elsewhere here, so this click is its first build.
+local function test_unbuilt_tab_builds_with_saved_value()
+  db.showReaction = true
+  clickTab("NPCs")
+  Assert.equal(boxes()["Reaction text"].checked, true)
+  db.showReaction = false
+  canvas:Fire("OnShow")
+end
+
 local function test_child_rows_indented_under_parent()
   clickTab("Players")
   local byLabel = boxes()
@@ -64,6 +73,7 @@ end
 
 return function()
   test_unbuilt_tab_builds_with_children_disabled()
+  test_unbuilt_tab_builds_with_saved_value()
   test_child_rows_indented_under_parent()
   test_mount_children_follow_parent()
   test_offset_sliders_disable_with_follow_cursor()
