@@ -24,7 +24,6 @@ local NOOP_METHODS = {
   "SetTexCoord",
   "SetVertexColor",
   "SetDrawLayer",
-  "SetFontObject",
   "SetJustifyH",
   "SetParent",
   "SetHighlightTexture",
@@ -33,9 +32,33 @@ local NOOP_METHODS = {
 }
 
 local function newWidget(W, name)
-  local widget = { scripts = {}, hooks = {}, events = {}, shown = true, name = name }
+  local widget = { scripts = {}, hooks = {}, events = {}, shown = true, enabled = true, name = name }
   for _, method in ipairs(NOOP_METHODS) do
     widget[method] = function() end
+  end
+  function widget:SetEnabled(enabled)
+    self.enabled = enabled and true or false
+  end
+  function widget:Enable()
+    self.enabled = true
+  end
+  function widget:Disable()
+    self.enabled = false
+  end
+  function widget:IsEnabled()
+    return self.enabled
+  end
+  function widget:SetMotionScriptsWhileDisabled(value)
+    self.motionWhileDisabled = value
+  end
+  function widget:LockHighlight()
+    self.highlightLocked = true
+  end
+  function widget:UnlockHighlight()
+    self.highlightLocked = false
+  end
+  function widget:SetFontObject(font)
+    self.font = font
   end
   function widget:SetPoint(...)
     self.point = { ... }
@@ -170,6 +193,10 @@ local function installTooltip(W)
   end
   function tip:GetOwner()
     return self.owner
+  end
+  -- Blizzard's SetText(text, r, g, b, a, wrap): records the wrap flag.
+  function tip:SetText(text, _r, _g, _b, _a, wrap)
+    self.text, self.wrap = text, wrap
   end
   function tip:SetAnchorType(anchor, x, y)
     self.anchor, self.offsetX, self.offsetY = anchor, x, y
