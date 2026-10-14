@@ -1,5 +1,5 @@
-## Interface: 120100, 16001
-## Interface-Mainline: 120100
+## Interface: 120105, 16001
+## Interface-Mainline: 120105
 ## Interface-Forever: 16001
 ## Interface-Vanilla: 11509
 ## Interface-Classic: 11509
@@ -15,7 +15,7 @@
 ## Author: F0rty_tw0
 ## Category: Tooltip
 ## IconTexture: Interface\AddOns\MouseOverTooltip\Media\Icon
-## Version: v1.0.2
+## Version: v1.0.3
 ## SavedVariables: MouseOverTooltipDB
 ## X-Curse-Project-ID: 1714142
 ## AddonCompartmentFunc: MouseOverTooltip_OnAddonCompartmentClick
