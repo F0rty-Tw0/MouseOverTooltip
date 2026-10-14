@@ -1,63 +1,70 @@
 local Assert = require("tests.helpers.assert")
-local Wow = require("tests.helpers.wow")
-local W = Wow.Install()
+local PanelHelper = require("tests.helpers.panel")
 
-local canvas, opened
-local category = {
-  GetID = function()
-    return 77
-  end,
-}
-_G.Settings = {
-  RegisterCanvasLayoutCategory = function(frame, name)
-    canvas, category.name = frame, name
-    return category
-  end,
-  RegisterAddOnCategory = function(cat)
-    cat.registered = true
-  end,
-  OpenToCategory = function(id)
-    opened = id
-  end,
-}
--- Vanilla-like flavor: no M+ or inspect item level APIs.
-local SavedState = require("MouseOverTooltip.Settings.SavedState")
-local Panel = require("MouseOverTooltip.Settings.Panel")
+local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
 
-local db = SavedState.Initialize(nil)
-local changes, counts = {}, {}
-local framesBefore = #W.frames
-Panel.Register(db, function(key, value)
-  changes[key] = value
-  counts[key] = (counts[key] or 0) + 1
-end)
-local framesAtRegister = #W.frames
-
-local function boxes()
-  local byLabel = {}
-  for _, frame in ipairs(W.frames) do
-    if frame.label then
-      byLabel[frame.label:GetText()] = frame
-    end
-  end
-  return byLabel
-end
+-- Vanilla-like flavor: no M+, inspect item level or mount APIs.
+local ctx = PanelHelper.Setup()
+local W, db, canvas, category = ctx.W, ctx.db, ctx.canvas, ctx.category
+local boxes, tabButton, clickTab = ctx.boxes, ctx.tabButton, ctx.clickTab
 
 local function test_category_registered_under_addons()
   Assert.equal(category.name, "Mouseover Tooltip")
   Assert.equal(category.registered, true)
 end
 
+-- Regression guard: Defaults works before any tab was ever built.
+local function test_defaults_before_first_open_resets()
+  db.showTarget = true
+  canvas:OnDefault()
+  Assert.equal(db.showTarget, false)
+end
+
 local function test_nothing_built_until_first_open()
-  Assert.equal(framesAtRegister - framesBefore, 1, "only the empty canvas exists at login")
+  Assert.equal(ctx.framesAtRegister - ctx.framesBefore, 1, "only the empty canvas exists at login")
   canvas:Fire("OnShow")
-  Assert.equal(#W.frames > framesAtRegister, true)
+  Assert.equal(#W.frames > ctx.framesAtRegister, true)
   local count = #W.frames
   canvas:Fire("OnShow")
   Assert.equal(#W.frames, count, "built once")
 end
 
+local function test_first_open_builds_general_only()
+  local byLabel = boxes()
+  Assert.equal(byLabel["Minimap button"] ~= nil, true)
+  Assert.equal(byLabel["Quest progress"], nil, "NPCs tab not built yet")
+end
+
+local function test_tab_click_builds_once()
+  clickTab("NPCs")
+  Assert.equal(boxes()["Quest progress"] ~= nil, true)
+  local count = #W.frames
+  clickTab("NPCs")
+  Assert.equal(#W.frames, count, "built once")
+end
+
+local function test_tab_switch_shows_one_frame_and_locks_highlight()
+  clickTab("Players")
+  Assert.equal(tabButton("Players").highlightLocked, true)
+  Assert.equal(tabButton("General").highlightLocked, false)
+  local byLabel = boxes()
+  Assert.equal(byLabel["Minimap button"].point[2].shown, false, "General frame hidden")
+  Assert.equal(byLabel["Target line"].point[2].shown, true, "Players frame shown")
+end
+
+local function test_reopen_keeps_last_tab()
+  canvas:Fire("OnShow")
+  Assert.equal(tabButton("Players").highlightLocked, true)
+end
+
+local function test_info_column_right_of_header_column()
+  local byLabel = boxes()
+  Assert.equal(byLabel["Target line"].point[4] > byLabel["Class"].point[4], true)
+end
+
 local function test_checkbox_shows_saved_value_and_hides_missing_apis()
+  clickTab("Players")
+  clickTab("NPCs")
   local byLabel = boxes()
   Assert.equal(byLabel["Quest progress"].checked, true)
   Assert.equal(byLabel["Target line"].checked, false)
@@ -65,19 +72,13 @@ local function test_checkbox_shows_saved_value_and_hides_missing_apis()
   Assert.equal(byLabel["Item level (inspect)"], nil, "flavor lacks inspect item level")
 end
 
-local function test_second_column_sits_right_of_first()
-  local byLabel = boxes()
-  local leftX = byLabel["Target line"].point[4]
-  local rightX = byLabel["Quest progress"].point[4]
-  Assert.equal(rightX > leftX, true)
-end
-
 local function test_click_saves_and_forwards_change()
+  clickTab("General")
   local box = boxes()["Minimap button"]
   box:SetChecked(false)
   box:Fire("OnClick")
   Assert.equal(db.minimapButton, false)
-  Assert.equal(changes.minimapButton, false)
+  Assert.equal(ctx.changes.minimapButton, false)
 end
 
 local function fireSlider(slider, value)
@@ -85,6 +86,7 @@ local function fireSlider(slider, value)
 end
 
 local function test_offset_sliders_built_with_one_pixel_steps()
+  clickTab("General")
   local byLabel = boxes()
   local x = byLabel["X"]
   Assert.equal(x.steps, 200)
@@ -125,54 +127,60 @@ end
 local function test_slider_change_saves_and_forwards()
   fireSlider(boxes()["X"], 12.4)
   Assert.equal(db.cursorOffsetX, 12)
-  Assert.equal(changes.cursorOffsetX, 12)
+  Assert.equal(ctx.changes.cursorOffsetX, 12)
 end
 
 local function test_same_slider_value_does_not_forward()
-  changes = {}
+  ctx.changes = {}
   fireSlider(boxes()["X"], 12)
-  Assert.equal(changes.cursorOffsetX, nil)
+  Assert.equal(ctx.changes.cursorOffsetX, nil)
 end
 
 local function test_slider_hover_shows_hint()
   local track = boxes()["X"].Slider
   track:Fire("OnEnter")
   Assert.equal(W.tooltip.shown, true)
-  Assert.equal(W.tooltip:GetText(), "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'.")
+  Assert.equal(W.tooltip:GetText(), OFFSET_HINT)
   track:Fire("OnLeave")
   Assert.equal(W.tooltip.shown, false)
 end
 
 local function test_defaults_button_restores_and_refreshes()
+  clickTab("General")
   local x = boxes()["X"]
   x:SetValue(30)
   Assert.equal(db.cursorOffsetX, 30)
   boxes()["Scale"]:SetValue(150)
-  changes, counts = {}, {}
+  ctx.changes, ctx.counts = {}, {}
   db.showTarget = true
   canvas:OnDefault()
   Assert.equal(db.showTarget, false)
   Assert.equal(db.minimapButton, true)
-  Assert.equal(changes.minimapButton, true, "change forwarded so the button reappears")
+  Assert.equal(ctx.changes.minimapButton, true, "change forwarded so the button reappears")
   Assert.equal(boxes()["Minimap button"].checked, true)
   Assert.equal(db.cursorOffsetX, 0)
   Assert.equal(x.value, 0, "slider display reset")
-  Assert.equal(counts.cursorOffsetX, 1, "refresh does not re-forward the reset")
+  Assert.equal(ctx.counts.cursorOffsetX, 1, "refresh does not re-forward the reset")
   Assert.equal(db.tooltipScale, 100)
-  Assert.equal(changes.tooltipScale, 100, "change forwarded so the tooltip resizes")
+  Assert.equal(ctx.changes.tooltipScale, 100, "change forwarded so the tooltip resizes")
   Assert.equal(boxes()["Scale"].value, 100, "slider display reset")
 end
 
 local function test_open_goes_to_category()
-  Panel.Open()
-  Assert.equal(opened, 77)
+  ctx.Panel.Open()
+  Assert.equal(ctx.opened, 77)
 end
 
 return function()
   test_category_registered_under_addons()
+  test_defaults_before_first_open_resets()
   test_nothing_built_until_first_open()
+  test_first_open_builds_general_only()
+  test_tab_click_builds_once()
+  test_tab_switch_shows_one_frame_and_locks_highlight()
+  test_reopen_keeps_last_tab()
+  test_info_column_right_of_header_column()
   test_checkbox_shows_saved_value_and_hides_missing_apis()
-  test_second_column_sits_right_of_first()
   test_click_saves_and_forwards_change()
   test_offset_sliders_built_with_one_pixel_steps()
   test_y_slider_shares_row_right_of_x()

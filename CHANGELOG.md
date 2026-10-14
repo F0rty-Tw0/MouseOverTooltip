@@ -6,7 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
-- New Scale slider under Visuals to make tooltips bigger or smaller (50–200%). Item comparison tooltips resize with it.
+- New Scale slider on the General tab to make tooltips bigger or smaller (50–200%). Item comparison tooltips resize with it.
+- Options are now split into tabs (General, Players, NPCs, Look, Combat). Sub-options sit under the option they depend on and gray out while it's off, and every option explains itself when you hover over it.
 
 ## [1.0.2] - 2026-10-08
 

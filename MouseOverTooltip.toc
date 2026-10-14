@@ -54,6 +54,7 @@ Tooltip/Anchor.lua
 Tooltip/Scale.lua
 Tooltip/UnitTooltip.lua
 
+Settings/Widgets.lua
 Settings/Panel.lua
 UI/MinimapButton.lua
 
