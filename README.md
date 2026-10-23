@@ -2,6 +2,8 @@
 
 <h1 align="center">Mouseover Tooltip</h1>
 
+[![BuyMeACoffee](https://raw.githubusercontent.com/pachadotdev/buymeacoffee-badges/main/bmc-donate-yellow.svg)](buymeacoffee.com/f0rty_tw0)
+
 <p align="center"><b>The mouseover tooltip you already know, with the info you actually want, and nothing that slows your game down.</b></p>
 
 <p align="center"><img src=".github/assets/tooltip-mount-source.png" alt="Player tooltip with item level, the mount they ride and where to get it"></p>
