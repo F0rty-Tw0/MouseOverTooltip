@@ -61,6 +61,40 @@ local function test_resize_recenters_offset_tooltip()
   Assert.equal(tip.offsetX, -130)
 end
 
+-- Bag and action buttons own their tooltip; the offset must still recenter there.
+local function test_resize_recenters_offset_on_button_owner()
+  W.tooltip.width = 100
+  local button = {}
+  Anchor.Install({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  _G.GameTooltip_SetDefaultAnchor(W.tooltip, button)
+  W.tooltip.width = 300
+  W.tooltip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(W.tooltip.offsetX, -130)
+end
+
+-- Blizzard anchors and shows in the same frame, so our offset stays live.
+local function test_same_frame_show_keeps_offset()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  tip:Fire("OnShow")
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, -130)
+end
+
+-- Our anchor never showed; another addon re-anchors the hidden tooltip (no
+-- OnHide) and shows it a frame later. Its offsets must be left alone.
+local function test_later_show_by_other_addon_is_left_alone()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  W.now = W.now + 1
+  tip:SetOwner(_G.UIParent, "ANCHOR_CURSOR_RIGHT", 4, 8)
+  tip:Fire("OnShow")
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, 4)
+end
+
 local function test_resize_leaves_other_owners_alone()
   W.tooltip.width = 100
   local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
@@ -174,6 +208,9 @@ return function()
   test_offsets_move_from_centered_spot()
   test_one_axis_offset_keeps_horizontal_center()
   test_resize_recenters_offset_tooltip()
+  test_resize_recenters_offset_on_button_owner()
+  test_same_frame_show_keeps_offset()
+  test_later_show_by_other_addon_is_left_alone()
   test_resize_leaves_other_owners_alone()
   test_same_owner_new_anchor_is_left_alone()
   test_resize_after_follow_off_leaves_blizzard_anchor()

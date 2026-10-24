@@ -16,9 +16,12 @@ local offsetHooked = false
 -- True only while the tooltip holds our own offset anchor, so anchors set by
 -- Blizzard or other addons are never touched. Any SetOwner on a shown tooltip
 -- hides it first, so OnHide clears this; a different owner is ignored too.
+-- Blizzard anchors and shows in one frame, so a show in a later frame belongs
+-- to someone who re-anchored the still-hidden tooltip (GetTime is per frame).
 -- No SetOwner hook: an instance hook breaks Blizzard's GameTooltip:SetOwner on 12.0.
 local offsetActive = false
 local offsetOwner
+local offsetTime
 
 -- ANCHOR_CURSOR (bottom-center on the cursor) ignores offsets. ANCHOR_CURSOR_RIGHT
 -- puts the bottom-left there, so shifting x by half the width keeps 0 = centered.
@@ -42,6 +45,12 @@ local function onSizeChanged(tooltip)
   end
 end
 
+local function onShow()
+  if offsetActive and _G.GetTime() ~= offsetTime then
+    offsetActive = false
+  end
+end
+
 local function onHide()
   offsetActive = false
 end
@@ -53,6 +62,7 @@ local function installOffsetHooks(tooltip)
   end
   offsetHooked = true
   tooltip:HookScript("OnSizeChanged", onSizeChanged)
+  tooltip:HookScript("OnShow", onShow)
   tooltip:HookScript("OnHide", onHide)
 end
 
@@ -72,6 +82,7 @@ local function onDefaultAnchor(tooltip, parent)
   tooltip:SetOwner(parent, OFFSET_ANCHOR, x, settings.cursorOffsetY)
   installOffsetHooks(tooltip)
   offsetOwner = parent
+  offsetTime = _G.GetTime()
   offsetActive = true
 end
 
