@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-10-24
+
 - Fixed: with a cursor offset set, hovering bag items and other Blizzard tooltips threw "attempt to call a nil value" errors over and over.
 
 ## [1.0.3] - 2026-10-14
