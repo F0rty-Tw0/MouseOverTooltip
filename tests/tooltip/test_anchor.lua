@@ -95,6 +95,28 @@ local function test_later_show_by_other_addon_is_left_alone()
   Assert.equal(tip.offsetX, 4)
 end
 
+-- In game OnSizeChanged fires before OnShow, so the stale check can't wait for the show.
+local function test_later_resize_before_show_is_left_alone()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  W.now = W.now + 1
+  tip:SetOwner(_G.UIParent, "ANCHOR_CURSOR_RIGHT", 4, 8)
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, 4)
+end
+
+-- Once our own tooltip has shown, later resizes (lines filling in) still recenter.
+local function test_resize_after_own_show_recenters_in_later_frame()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  tip:Fire("OnShow")
+  W.now = W.now + 1
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, -130)
+end
+
 local function test_resize_leaves_other_owners_alone()
   W.tooltip.width = 100
   local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
@@ -211,6 +233,8 @@ return function()
   test_resize_recenters_offset_on_button_owner()
   test_same_frame_show_keeps_offset()
   test_later_show_by_other_addon_is_left_alone()
+  test_later_resize_before_show_is_left_alone()
+  test_resize_after_own_show_recenters_in_later_frame()
   test_resize_leaves_other_owners_alone()
   test_same_owner_new_anchor_is_left_alone()
   test_resize_after_follow_off_leaves_blizzard_anchor()
