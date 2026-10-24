@@ -13,9 +13,12 @@ local OFFSET_ANCHOR = "ANCHOR_CURSOR_RIGHT"
 local settings
 local hooked = false
 local offsetHooked = false
--- True only while the tooltip holds our own offset anchor; any other SetOwner
--- (Blizzard, other addons) clears it, so their anchors are never touched.
+-- True only while the tooltip holds our own offset anchor, so anchors set by
+-- Blizzard or other addons are never touched. Any SetOwner on a shown tooltip
+-- hides it first, so OnHide clears this; a different owner is ignored too.
+-- No SetOwner hook: an instance hook breaks Blizzard's GameTooltip:SetOwner on 12.0.
 local offsetActive = false
+local offsetOwner
 
 -- ANCHOR_CURSOR (bottom-center on the cursor) ignores offsets. ANCHOR_CURSOR_RIGHT
 -- puts the bottom-left there, so shifting x by half the width keeps 0 = centered.
@@ -30,7 +33,7 @@ end
 
 -- Width changes as lines are added; fires on resize only, not per frame.
 local function onSizeChanged(tooltip)
-  if not offsetActive or tooltip:GetAnchorType() ~= OFFSET_ANCHOR then
+  if not offsetActive or tooltip:GetOwner() ~= offsetOwner or tooltip:GetAnchorType() ~= OFFSET_ANCHOR then
     return
   end
   local x = centeredOffsetX(tooltip)
@@ -39,7 +42,7 @@ local function onSizeChanged(tooltip)
   end
 end
 
-local function onSetOwner()
+local function onHide()
   offsetActive = false
 end
 
@@ -49,8 +52,8 @@ local function installOffsetHooks(tooltip)
     return
   end
   offsetHooked = true
-  _G.hooksecurefunc(tooltip, "SetOwner", onSetOwner)
   tooltip:HookScript("OnSizeChanged", onSizeChanged)
+  tooltip:HookScript("OnHide", onHide)
 end
 
 local function onDefaultAnchor(tooltip, parent)
@@ -68,6 +71,7 @@ local function onDefaultAnchor(tooltip, parent)
   end
   tooltip:SetOwner(parent, OFFSET_ANCHOR, x, settings.cursorOffsetY)
   installOffsetHooks(tooltip)
+  offsetOwner = parent
   offsetActive = true
 end
 

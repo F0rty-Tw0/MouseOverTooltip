@@ -1,6 +1,7 @@
 local Assert = require("tests.helpers.assert")
 local Wow = require("tests.helpers.wow")
 local W = Wow.Install()
+local ORIGINAL_SET_OWNER = W.tooltip.SetOwner
 
 -- A secret width is a table: arithmetic on it throws, like the real thing.
 local SECRET = {}
@@ -71,9 +72,11 @@ end
 
 -- Other addons (e.g. Plumber) anchor GameTooltip to UIParent with the same
 -- anchor type and their own offsets; a resize must not overwrite them.
+-- The real SetOwner hides a shown tooltip first, which fires OnHide.
 local function test_same_owner_new_anchor_is_left_alone()
   W.tooltip.width = 100
   local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  tip:Fire("OnHide")
   tip:SetOwner(_G.UIParent, "ANCHOR_CURSOR_RIGHT", 4, 8)
   tip.width = 300
   tip:Fire("OnSizeChanged", 300, 50)
@@ -95,6 +98,13 @@ local function test_resize_hook_installed_once()
   anchorWith(db)
   local tip = anchorWith(db)
   Assert.equal(#tip.hooks.OnSizeChanged, 1)
+end
+
+-- An instance hook writes a wrapper into GameTooltip.SetOwner; on 12.0 Blizzard's
+-- own SetOwner calls (bags, default anchor) then fail with "attempt to call a nil value".
+local function test_offset_anchor_leaves_tooltip_set_owner_untouched()
+  anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  Assert.equal(rawget(W.tooltip, "SetOwner"), ORIGINAL_SET_OWNER)
 end
 
 local function test_secret_width_falls_back_to_centered_anchor()
@@ -168,6 +178,7 @@ return function()
   test_same_owner_new_anchor_is_left_alone()
   test_resize_after_follow_off_leaves_blizzard_anchor()
   test_resize_hook_installed_once()
+  test_offset_anchor_leaves_tooltip_set_owner_untouched()
   test_secret_width_falls_back_to_centered_anchor()
   test_secret_width_on_resize_keeps_last_offset()
   test_follow_off_ignores_offsets()
