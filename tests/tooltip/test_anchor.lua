@@ -1,6 +1,7 @@
 local Assert = require("tests.helpers.assert")
 local Wow = require("tests.helpers.wow")
 local W = Wow.Install()
+local ORIGINAL_SET_OWNER = W.tooltip.SetOwner
 
 -- A secret width is a table: arithmetic on it throws, like the real thing.
 local SECRET = {}
@@ -60,6 +61,62 @@ local function test_resize_recenters_offset_tooltip()
   Assert.equal(tip.offsetX, -130)
 end
 
+-- Bag and action buttons own their tooltip; the offset must still recenter there.
+local function test_resize_recenters_offset_on_button_owner()
+  W.tooltip.width = 100
+  local button = {}
+  Anchor.Install({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  _G.GameTooltip_SetDefaultAnchor(W.tooltip, button)
+  W.tooltip.width = 300
+  W.tooltip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(W.tooltip.offsetX, -130)
+end
+
+-- Blizzard anchors and shows in the same frame, so our offset stays live.
+local function test_same_frame_show_keeps_offset()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  tip:Fire("OnShow")
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, -130)
+end
+
+-- Our anchor never showed; another addon re-anchors the hidden tooltip (no
+-- OnHide) and shows it a frame later. Its offsets must be left alone.
+local function test_later_show_by_other_addon_is_left_alone()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  W.now = W.now + 1
+  tip:SetOwner(_G.UIParent, "ANCHOR_CURSOR_RIGHT", 4, 8)
+  tip:Fire("OnShow")
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, 4)
+end
+
+-- In game OnSizeChanged fires before OnShow, so the stale check can't wait for the show.
+local function test_later_resize_before_show_is_left_alone()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  W.now = W.now + 1
+  tip:SetOwner(_G.UIParent, "ANCHOR_CURSOR_RIGHT", 4, 8)
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, 4)
+end
+
+-- Once our own tooltip has shown, later resizes (lines filling in) still recenter.
+local function test_resize_after_own_show_recenters_in_later_frame()
+  W.tooltip.width = 100
+  local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  tip:Fire("OnShow")
+  W.now = W.now + 1
+  tip.width = 300
+  tip:Fire("OnSizeChanged", 300, 50)
+  Assert.equal(tip.offsetX, -130)
+end
+
 local function test_resize_leaves_other_owners_alone()
   W.tooltip.width = 100
   local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
@@ -71,9 +128,11 @@ end
 
 -- Other addons (e.g. Plumber) anchor GameTooltip to UIParent with the same
 -- anchor type and their own offsets; a resize must not overwrite them.
+-- The real SetOwner hides a shown tooltip first, which fires OnHide.
 local function test_same_owner_new_anchor_is_left_alone()
   W.tooltip.width = 100
   local tip = anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  tip:Fire("OnHide")
   tip:SetOwner(_G.UIParent, "ANCHOR_CURSOR_RIGHT", 4, 8)
   tip.width = 300
   tip:Fire("OnSizeChanged", 300, 50)
@@ -95,6 +154,13 @@ local function test_resize_hook_installed_once()
   anchorWith(db)
   local tip = anchorWith(db)
   Assert.equal(#tip.hooks.OnSizeChanged, 1)
+end
+
+-- An instance hook writes a wrapper into GameTooltip.SetOwner; on 12.0 Blizzard's
+-- own SetOwner calls (bags, default anchor) then fail with "attempt to call a nil value".
+local function test_offset_anchor_leaves_tooltip_set_owner_untouched()
+  anchorWith({ followCursor = true, cursorOffsetX = 20, cursorOffsetY = 0 })
+  Assert.equal(rawget(W.tooltip, "SetOwner"), ORIGINAL_SET_OWNER)
 end
 
 local function test_secret_width_falls_back_to_centered_anchor()
@@ -164,10 +230,16 @@ return function()
   test_offsets_move_from_centered_spot()
   test_one_axis_offset_keeps_horizontal_center()
   test_resize_recenters_offset_tooltip()
+  test_resize_recenters_offset_on_button_owner()
+  test_same_frame_show_keeps_offset()
+  test_later_show_by_other_addon_is_left_alone()
+  test_later_resize_before_show_is_left_alone()
+  test_resize_after_own_show_recenters_in_later_frame()
   test_resize_leaves_other_owners_alone()
   test_same_owner_new_anchor_is_left_alone()
   test_resize_after_follow_off_leaves_blizzard_anchor()
   test_resize_hook_installed_once()
+  test_offset_anchor_leaves_tooltip_set_owner_untouched()
   test_secret_width_falls_back_to_centered_anchor()
   test_secret_width_on_resize_keeps_last_offset()
   test_follow_off_ignores_offsets()
