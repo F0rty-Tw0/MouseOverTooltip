@@ -46,9 +46,9 @@ echo "Releasing MouseOverTooltip ${TAG_VERSION}..."
 
 # Fetch live TOC interface numbers from Blizzard's patch CDN, one per flavor
 # product. Refuses to release if any required product is unreachable so we
-# never ship a stale interface after a WoW patch. TBC and Cata Classic are
-# EOL — Blizzard no longer publishes a live `wow_tbc` or `wow_classic_cata`
-# product, so those lines are left at whatever the TOC currently has.
+# never ship a stale interface after a WoW patch. Cata Classic is EOL —
+# Blizzard no longer publishes a live `wow_classic_cata` product, so the Cata
+# line is left at whatever the TOC currently has.
 fetch_toc() {
   local product="$1"
   python -c "
@@ -79,44 +79,37 @@ echo "Fetching live TOC interface numbers from Blizzard CDN..."
 TOC_RETAIL=$(fetch_toc wow) || cdn_die wow
 TOC_VANILLA=$(fetch_toc wow_classic_era) || cdn_die wow_classic_era
 TOC_MISTS=$(fetch_toc wow_classic) || cdn_die wow_classic
-# WoW: Forever is soft-fail: the beta lives under 'wow_classic_beta' and the
-# launch product key is unknown until 2026-11-04. If the fetch fails, warn and
-# keep whatever the TOC currently has.
-TOC_FOREVER=$(fetch_toc wow_classic_beta) || true
+TOC_TBC=$(fetch_toc wow_anniversary) || cdn_die wow_anniversary
+TOC_FOREVER=$(fetch_toc wowf) || cdn_die wowf
 
-if [[ -z "$TOC_RETAIL" || -z "$TOC_VANILLA" || -z "$TOC_MISTS" ]]; then
+if [[ -z "$TOC_RETAIL" || -z "$TOC_VANILLA" || -z "$TOC_MISTS" || -z "$TOC_TBC" || -z "$TOC_FOREVER" ]]; then
   echo "Error: could not parse one or more TOC numbers from Blizzard response."
-  echo "       retail='${TOC_RETAIL}' vanilla='${TOC_VANILLA}' mists='${TOC_MISTS}'"
+  echo "       retail='${TOC_RETAIL}' vanilla='${TOC_VANILLA}' mists='${TOC_MISTS}' tbc='${TOC_TBC}' forever='${TOC_FOREVER}'"
   exit 1
 fi
 
 echo "  retail (Mainline): ${TOC_RETAIL}"
 echo "  vanilla:           ${TOC_VANILLA}"
 echo "  mists:             ${TOC_MISTS}"
-if [[ -n "$TOC_FOREVER" ]]; then
-  echo "  forever:           ${TOC_FOREVER}"
-else
-  echo "  forever:           skipped (CDN fetch failed, keeping current TOC value)"
-fi
-echo "  TBC and Cata: skipped (Classic seasons EOL, no live CDN)"
+echo "  tbc:               ${TOC_TBC}"
+echo "  forever:           ${TOC_FOREVER}"
+echo "  Cata: skipped (Classic season EOL, no live CDN)"
 
 # Move [Unreleased] notes into this release's section. Runs before any other
 # file edit so a missing-notes error leaves the tree untouched.
 python scripts/promote_changelog.py --version "${TAG_VERSION}"
 
 # The Forever client ignores the Interface-Forever line and reads only the
-# base line, so Forever's number rides there too (comma list). A failed
-# Forever fetch keeps the number already in the TOC.
-FOREVER_FOR_BASE="${TOC_FOREVER:-$(grep '^## Interface-Forever:' MouseOverTooltip.toc | grep -o '[0-9][0-9]*' | head -1 || true)}"
-sed -i "s/^## Interface: .*/## Interface: ${TOC_RETAIL}${FOREVER_FOR_BASE:+, ${FOREVER_FOR_BASE}}/" MouseOverTooltip.toc
+# base line, so Forever's number rides there too (comma list).
+sed -i "s/^## Interface: .*/## Interface: ${TOC_RETAIL}, ${TOC_FOREVER}/" MouseOverTooltip.toc
 sed -i "s/^## Interface-Mainline: .*/## Interface-Mainline: ${TOC_RETAIL}/" MouseOverTooltip.toc
 sed -i "s/^## Interface-Vanilla: .*/## Interface-Vanilla: ${TOC_VANILLA}/" MouseOverTooltip.toc
 sed -i "s/^## Interface-Classic: .*/## Interface-Classic: ${TOC_VANILLA}/" MouseOverTooltip.toc
 sed -i "s/^## Interface-Mists: .*/## Interface-Mists: ${TOC_MISTS}/" MouseOverTooltip.toc
 sed -i "s/^## Interface-MoP: .*/## Interface-MoP: ${TOC_MISTS}/" MouseOverTooltip.toc
-if [[ -n "$TOC_FOREVER" ]]; then
-  sed -i "s/^## Interface-Forever: .*/## Interface-Forever: ${TOC_FOREVER}/" MouseOverTooltip.toc
-fi
+sed -i "s/^## Interface-TBC: .*/## Interface-TBC: ${TOC_TBC}/" MouseOverTooltip.toc
+sed -i "s/^## Interface-BCC: .*/## Interface-BCC: ${TOC_TBC}/" MouseOverTooltip.toc
+sed -i "s/^## Interface-Forever: .*/## Interface-Forever: ${TOC_FOREVER}/" MouseOverTooltip.toc
 
 # Update version in TOC
 sed -i "s/^## Version: .*/## Version: ${TAG_VERSION}/" MouseOverTooltip.toc
