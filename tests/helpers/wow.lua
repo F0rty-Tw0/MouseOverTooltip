@@ -145,6 +145,9 @@ end
 -- OnValueChanged callback like the real template does.
 local function addSliderMethods(W, frame)
   frame.Slider = newWidget(W)
+  function frame:SetSize(width)
+    self.width = width
+  end
   function frame:Init(value, minValue, maxValue, steps, formatters)
     self.value, self.min, self.max, self.steps, self.formatters = value, minValue, maxValue, steps, formatters
   end

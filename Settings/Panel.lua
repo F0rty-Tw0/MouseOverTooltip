@@ -24,8 +24,8 @@ local HEADER_HEIGHT = 26
 local HEADER_DROP = 8
 local ROW_HEIGHT = 22
 local SLIDER_ROW_HEIGHT = ROW_HEIGHT + 4
-local SLIDER_HALF = 170
 local INDENT = 20
+local SLIDER_HALF = COLUMN_WIDTH - INDENT
 
 -- Tabbed canvas page in Options > AddOns: a row of tab buttons under the
 -- title, one child frame per tab, one tab shown at a time. Until first open

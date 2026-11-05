@@ -103,6 +103,18 @@ local function test_y_slider_shares_row_right_of_x()
   Assert.equal(byLabel["Y"].point[4] > byLabel["X"].point[4], true)
 end
 
+local function test_sliders_are_wide()
+  local byLabel = boxes()
+  Assert.equal(byLabel["X"].width, 230)
+  Assert.equal(byLabel["Y"].width, 230)
+  Assert.equal(byLabel["Scale"].width, 230)
+end
+
+local function test_y_slider_starts_on_right_column_line()
+  local byLabel = boxes()
+  Assert.equal(byLabel["Y"].label.point[4], byLabel["Target line"].point[4])
+end
+
 local function test_scale_slider_uses_percent()
   local s = boxes()["Scale"]
   Assert.equal(s.min, 50)
@@ -184,6 +196,8 @@ return function()
   test_click_saves_and_forwards_change()
   test_offset_sliders_built_with_one_pixel_steps()
   test_y_slider_shares_row_right_of_x()
+  test_sliders_are_wide()
+  test_y_slider_starts_on_right_column_line()
   test_scale_slider_uses_percent()
   test_scale_slider_clears_its_label()
   test_scale_slider_on_own_row_below_offsets()

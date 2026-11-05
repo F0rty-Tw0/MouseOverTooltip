@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+- Wider X, Y and Scale sliders on the General options tab, for finer control.
+
 ## [1.0.5] - 2026-11-04
 
 - Ready for the WoW: Forever launch.
