@@ -13,6 +13,7 @@ local PvP = ns.PvP or require("MouseOverTooltip.Data.PvP")
 local SavedState = ns.SavedState or require("MouseOverTooltip.Settings.SavedState")
 local Scale = ns.Scale or require("MouseOverTooltip.Tooltip.Scale")
 local SlashCommand = ns.SlashCommand or require("MouseOverTooltip.Core.SlashCommand")
+local UnitFrameHint = ns.UnitFrameHint or require("MouseOverTooltip.Tooltip.UnitFrameHint")
 local UnitTooltip = ns.UnitTooltip or require("MouseOverTooltip.Tooltip.UnitTooltip")
 
 local ADDON_NAME = "MouseOverTooltip"
@@ -40,6 +41,7 @@ function Bootstrap.Initialize(saved)
   if ns.LineFilter then
     ns.LineFilter.Install(db)
   end
+  UnitFrameHint.Install()
   Anchor.Install(db)
   Scale.Install(db)
   Panel.Register(db, function(key, value)

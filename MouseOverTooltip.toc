@@ -53,6 +53,7 @@ Tooltip/Border.lua
 Tooltip/Anchor.lua
 Tooltip/Scale.lua
 Tooltip/UnitTooltip.lua
+Tooltip/UnitFrameHint.lua
 
 Settings/Widgets.lua
 Settings/Panel.lua
