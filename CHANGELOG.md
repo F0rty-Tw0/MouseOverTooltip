@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-11-07
+
 - Hovering a player, party or raid frame no longer adds the "Right click for Frame Settings" hint to the tooltip.
 
 ## [1.0.6] - 2026-11-05
