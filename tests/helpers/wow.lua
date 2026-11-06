@@ -178,6 +178,7 @@ local function installTooltip(W)
     local line = W.Line(self.numLines)
     line.text = text
     line.color = { r, g, b }
+    line.shown = true
   end
   function tip:ClearLines()
     for i = 1, self.numLines do

@@ -1,0 +1,61 @@
+local Assert = require("tests.helpers.assert")
+local Wow = require("tests.helpers.wow")
+local W = Wow.Install()
+
+local HINT = "<Right click for Frame Settings>"
+_G.UNIT_POPUP_RIGHT_CLICK = HINT
+
+-- Mirrors Blizzard's UnitFrame_UpdateTooltip: unit lines, a blank line, then the hint.
+local blizzardLines = { "Bob", "Level 80 Human Mage (Player)" }
+_G.UnitFrame_UpdateTooltip = function(_frame)
+  W.SetTooltipLines("party1", blizzardLines)
+  W.tooltip:AddLine(" ")
+  W.tooltip:AddLine(HINT)
+end
+
+local UnitFrameHint = require("MouseOverTooltip.Tooltip.UnitFrameHint")
+UnitFrameHint.Install()
+
+local function test_unit_frame_hint_is_removed()
+  _G.UnitFrame_UpdateTooltip({})
+  Assert.equal(W.LineText(4), nil)
+  Assert.equal(W.Line(4).shown, false)
+end
+
+local function test_blank_line_above_hint_is_removed()
+  _G.UnitFrame_UpdateTooltip({})
+  Assert.equal(W.LineText(3), nil)
+  Assert.equal(W.Line(3).shown, false)
+end
+
+local function test_unit_lines_are_kept()
+  _G.UnitFrame_UpdateTooltip({})
+  Assert.equal(W.LineText(1), "Bob")
+  Assert.equal(W.LineText(2), "Level 80 Human Mage (Player)")
+end
+
+local function test_tooltip_without_hint_is_untouched()
+  W.SetTooltipLines("mouseover", { "Bob", " ", "Some quest" })
+  _G.UnitFrame_UpdateTooltip = function() end
+  package.loaded["MouseOverTooltip.Tooltip.UnitFrameHint"] = nil
+  require("MouseOverTooltip.Tooltip.UnitFrameHint").Install()
+  _G.UnitFrame_UpdateTooltip({})
+  Assert.equal(W.LineText(2), " ")
+  Assert.equal(W.LineText(3), "Some quest")
+end
+
+local function test_no_hook_when_blizzard_function_missing()
+  W = Wow.Install()
+  _G.UnitFrame_UpdateTooltip = nil
+  package.loaded["MouseOverTooltip.Tooltip.UnitFrameHint"] = nil
+  require("MouseOverTooltip.Tooltip.UnitFrameHint").Install()
+  Assert.equal(W.calls.hooksecurefunc, nil)
+end
+
+return function()
+  test_unit_frame_hint_is_removed()
+  test_blank_line_above_hint_is_removed()
+  test_unit_lines_are_kept()
+  test_tooltip_without_hint_is_untouched()
+  test_no_hook_when_blizzard_function_missing()
+end
