@@ -1,5 +1,6 @@
 local Assert = require("tests.helpers.assert")
 local Defaults = require("MouseOverTooltip.Settings.Defaults")
+local FlavorCompat = require("MouseOverTooltip.Core.FlavorCompat")
 local SavedState = require("MouseOverTooltip.Settings.SavedState")
 
 local function test_new_install_gets_every_default()
@@ -66,7 +67,35 @@ local function test_offset_bad_type_falls_back()
   Assert.equal(SavedState.Initialize({ cursorOffsetX = true }).cursorOffsetX, 0)
 end
 
+local function test_forever_new_install_gets_forever_defaults()
+  FlavorCompat.isForever = true
+  local db = SavedState.Initialize(nil)
+  FlavorCompat.isForever = false
+  Assert.equal(db.showClassification, true)
+  Assert.equal(db.grayTapped, true)
+  Assert.equal(db.showItemLevel, false)
+  Assert.equal(db.showQuest, true, "keys without foreverDefault keep default")
+end
+
+local function test_forever_saved_choice_wins()
+  FlavorCompat.isForever = true
+  local db = SavedState.Initialize({ showClassification = false, showItemLevel = true })
+  FlavorCompat.isForever = false
+  Assert.equal(db.showClassification, false)
+  Assert.equal(db.showItemLevel, true)
+end
+
+local function test_forever_bad_type_falls_back_to_forever_default()
+  FlavorCompat.isForever = true
+  local value = SavedState.Initialize({ showItemLevel = "x" }).showItemLevel
+  FlavorCompat.isForever = false
+  Assert.equal(value, false)
+end
+
 return function()
+  test_forever_new_install_gets_forever_defaults()
+  test_forever_saved_choice_wins()
+  test_forever_bad_type_falls_back_to_forever_default()
   test_new_install_gets_every_default()
   test_saved_choices_survive_initialize()
   test_spec_defaults_for_key_settings()

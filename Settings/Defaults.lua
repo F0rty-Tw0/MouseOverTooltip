@@ -10,10 +10,13 @@ end
 -- `{ header = "..." }` adds a group header.
 -- `requires` names a FlavorCompat flag; the panel hides the row without it.
 -- `parent` names an earlier checkbox key in the same tab; the row is its child.
+-- `foreverDefault` replaces `default` on WoW: Forever; read it through Defaults.Value.
 -- `hint` is the one-sentence hover help every setting row carries.
 -- `min`/`max` make a numeric slider setting; `sameRow` puts it beside the
 -- previous slider; `labelWidth` widens its label column; `suffix` follows
 -- the shown value.
+local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
+
 local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
 local OFFSET_LIMIT = 100
 local SCALE_HINT = "Size of the tooltip, in percent of normal."
@@ -119,6 +122,7 @@ local Defaults = {
     {
       key = "showItemLevel",
       default = true,
+      foreverDefault = false,
       label = "Item level (inspect)",
       hint = "Shows the player's item level" .. INSPECT_NOTE,
       requires = "hasItemLevel",
@@ -187,6 +191,7 @@ local Defaults = {
     {
       key = "showClassification",
       default = false,
+      foreverDefault = true,
       label = "Classification (Rare/Elite/Boss)",
       hint = "Shows Rare, Elite or Boss on the level line, color-coded.",
     },
@@ -200,6 +205,7 @@ local Defaults = {
     {
       key = "grayTapped",
       default = false,
+      foreverDefault = true,
       label = "Tapped gray-out",
       hint = "Grays the name of mobs another player tagged first; they give you no loot.",
     },
@@ -285,6 +291,15 @@ local Defaults = {
     minimapAngle = 225,
   },
 }
+
+-- The default for this flavor; tests nil, not truthiness, since false is a valid override.
+function Defaults.Value(entry)
+  if FlavorCompat.isForever and entry.foreverDefault ~= nil then
+    return entry.foreverDefault
+  end
+
+  return entry.default
+end
 
 ns.SettingsDefaults = Defaults
 return Defaults

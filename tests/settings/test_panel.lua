@@ -1,5 +1,6 @@
 local Assert = require("tests.helpers.assert")
 local PanelHelper = require("tests.helpers.panel")
+local FlavorCompat = require("MouseOverTooltip.Core.FlavorCompat")
 
 local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
 
@@ -183,6 +184,16 @@ local function test_open_goes_to_category()
   Assert.equal(ctx.opened, 77)
 end
 
+local function test_defaults_button_uses_forever_values()
+  FlavorCompat.isForever = true
+  db.showClassification, db.showItemLevel = false, true
+  canvas:OnDefault()
+  Assert.equal(db.showClassification, true)
+  Assert.equal(db.showItemLevel, false)
+  FlavorCompat.isForever = false
+  canvas:OnDefault()
+end
+
 return function()
   test_category_registered_under_addons()
   test_defaults_before_first_open_resets()
@@ -206,4 +217,5 @@ return function()
   test_slider_hover_shows_hint()
   test_defaults_button_restores_and_refreshes()
   test_open_goes_to_category()
+  test_defaults_button_uses_forever_values()
 end

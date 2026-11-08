@@ -126,7 +126,21 @@ local function test_keys_and_defaults_unchanged()
   end
 end
 
+local FOREVER = { showClassification = true, grayTapped = true, showItemLevel = false }
+
+local function test_forever_defaults_unchanged()
+  local seen = 0
+  for _, entry in ipairs(Defaults.list) do
+    if entry.foreverDefault ~= nil then
+      seen = seen + 1
+      Assert.equal(entry.foreverDefault, FOREVER[entry.key], entry.key .. " foreverDefault")
+    end
+  end
+  Assert.equal(seen, 3)
+end
+
 return function()
+  test_forever_defaults_unchanged()
   test_first_entry_is_a_tab()
   test_tabs_in_order()
   test_every_setting_has_a_short_hint()
