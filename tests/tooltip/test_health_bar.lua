@@ -54,6 +54,14 @@ local function test_health_text_shows_unit_health_not_bar_fraction()
   Assert.equal(created[1].text, "25K / 200K")
 end
 
+local function test_hide_text_survives_value_change()
+  HealthBar.Apply({ healthText = true, hideHealthBar = false }, "mouseover")
+  HealthBar.HideText()
+  Assert.equal(created[1].shown, false)
+  bar:Fire("OnValueChanged", 0.5)
+  Assert.equal(created[1].shown, false)
+end
+
 local function test_secret_health_is_abbreviated_without_comparing()
   local marker = secret
   rawset(_G, "issecretvalue", function(v)
@@ -84,6 +92,7 @@ end
 return function()
   test_everything_off_creates_nothing()
   test_health_text_shows_unit_health_not_bar_fraction()
+  test_hide_text_survives_value_change()
   test_secret_health_is_abbreviated_without_comparing()
   test_disabling_health_text_hides_it()
   test_hide_health_bar()
