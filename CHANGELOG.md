@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+- Fixed: hovering a corpse with rare/elite tags on could show a red "??" instead of the mob's level.
+
 ## [1.0.8] - 2026-11-08
 
 - New "Rare colored border" option on the Look tab: silver for rare mobs, lilac for rare elites.
