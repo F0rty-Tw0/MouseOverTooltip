@@ -6,6 +6,9 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+- New "Rare colored border" option on the Look tab: silver for rare mobs, lilac for rare elites.
+- WoW: Forever: new installs now start with rare/elite tags, tapped gray-out and the rare border on, and item level off. Already installed? Change them in the Players, NPCs and Look tabs, or press Defaults.
+
 ## [1.0.7] - 2026-11-07
 
 - Hovering a player, party or raid frame no longer adds the "Right click for Frame Settings" hint to the tooltip.
