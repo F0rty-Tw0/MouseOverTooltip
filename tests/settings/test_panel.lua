@@ -1,6 +1,6 @@
 local Assert = require("tests.helpers.assert")
-local PanelHelper = require("tests.helpers.panel")
 local FlavorCompat = require("MouseOverTooltip.Core.FlavorCompat")
+local PanelHelper = require("tests.helpers.panel")
 
 local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
 
