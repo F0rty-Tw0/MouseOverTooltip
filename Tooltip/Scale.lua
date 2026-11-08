@@ -35,12 +35,14 @@ local function restore()
   end
 end
 
--- At normal size: no API calls. The clear hook installs on first use only.
+-- At normal size, or already switched since the last clear (unit frames
+-- refresh often): no API calls. The clear hook installs on first use only.
 function Scale.UseNormal(tooltip, db)
-  if db.tooltipScale == NORMAL_PERCENT then
+  settings = db
+  if switched or db.tooltipScale == NORMAL_PERCENT then
     return
   end
-  settings, switched = db, true
+  switched = true
   tooltip:SetScale(1)
   if not clearHooked then
     clearHooked = true

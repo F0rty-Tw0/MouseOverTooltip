@@ -82,6 +82,18 @@ local function test_use_normal_restores_current_scale_once()
   Assert.equal(_G.GameTooltip.calls, nil)
 end
 
+-- Unit frames refresh their tooltip several times a second; already at normal
+-- size until the next clear, so no repeat SetScale. Reuses the frames above.
+local function test_use_normal_skips_repeat_until_clear()
+  local db = { tooltipScale = 150 }
+  _G.GameTooltip.calls = nil
+  Scale.UseNormal(_G.GameTooltip, db)
+  Scale.UseNormal(_G.GameTooltip, db)
+  Assert.equal(_G.GameTooltip.calls, 1)
+  _G.GameTooltip.hooks.OnTooltipCleared(_G.GameTooltip)
+  Assert.equal(_G.GameTooltip.scale, 1.5)
+end
+
 local function test_use_normal_at_100_calls_nothing()
   freshFrames()
   Scale.UseNormal(_G.GameTooltip, { tooltipScale = 100 })
@@ -93,6 +105,7 @@ return function()
   test_use_normal_at_100_calls_nothing()
   test_use_normal_restores_user_scale_on_clear()
   test_use_normal_restores_current_scale_once()
+  test_use_normal_skips_repeat_until_clear()
   test_default_scale_makes_no_calls()
   test_install_scales_all_three_frames()
   test_apply_100_resets_to_one()
