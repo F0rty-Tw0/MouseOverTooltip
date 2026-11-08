@@ -283,13 +283,13 @@ local Defaults = {
     {
       key = "blizzardWorldInCombat",
       default = false,
-      label = "Blizzard tooltip for world units in combat",
+      label = "Blizzard tooltip for world units",
       hint = "Shows the default Blizzard tooltip for characters in the game world in combat.",
     },
     {
       key = "blizzardFramesInCombat",
       default = false,
-      label = "Blizzard tooltip for unit frames in combat",
+      label = "Blizzard tooltip for unit frames",
       hint = "Shows the default Blizzard tooltip for unit frames, like party frames, in combat.",
     },
     {

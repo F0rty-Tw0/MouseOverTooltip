@@ -3,6 +3,9 @@ local Defaults = require("MouseOverTooltip.Settings.Defaults")
 local FlavorCompat = require("MouseOverTooltip.Core.FlavorCompat")
 
 local MAX_HINT = 90
+-- Labels sit in a fixed 250 px box on a fixed 22 px row; a longer label wraps
+-- onto the next row in game. 32 is the longest seen on one line.
+local MAX_LABEL = 32
 
 -- Every setting: { default, min, max, requires }. Guards saved-setting compatibility:
 -- saved settings carry over only while these stay identical.
@@ -98,6 +101,14 @@ local function test_every_setting_has_a_short_hint()
   end
 end
 
+local function test_every_label_fits_one_row()
+  for _, entry in ipairs(Defaults.list) do
+    if entry.key then
+      Assert.equal(#entry.label <= MAX_LABEL, true, entry.key .. " label length " .. #entry.label)
+    end
+  end
+end
+
 local function test_parent_is_earlier_checkbox_in_same_tab_and_not_a_child()
   local seen = {}
   for _, entry in ipairs(Defaults.list) do
@@ -175,6 +186,7 @@ return function()
   test_first_entry_is_a_tab()
   test_tabs_in_order()
   test_every_setting_has_a_short_hint()
+  test_every_label_fits_one_row()
   test_parent_is_earlier_checkbox_in_same_tab_and_not_a_child()
   test_child_requires_matches_parent()
   test_keys_and_defaults_unchanged()
