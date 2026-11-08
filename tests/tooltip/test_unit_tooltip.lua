@@ -63,6 +63,16 @@ local function test_refresh_after_mouse_left_does_not_cancel_fade()
   Assert.equal(shows, 0, "Show() would cancel Blizzard's fade-out")
 end
 
+-- Corpse tooltips can name "target" while nothing is targeted.
+local function test_missing_unit_keeps_blizzard_lines()
+  db.showClassification = true
+  W.units = { player = { name = "Me", guid = "Player-me", isPlayer = true } }
+  W.SetTooltipLines("target", { "Thunderhawk", "Level 24", "Corpse" })
+  postCalls[2](W.tooltip)
+  db.showClassification = false
+  Assert.equal(W.LineText(2), "Level 24")
+end
+
 local function test_inspect_result_refreshes_shown_tooltip()
   hoverBob()
   W.RunTimers()
@@ -211,6 +221,7 @@ return function()
   test_unit_post_call_styles_player()
   test_other_tooltips_are_ignored()
   test_refresh_after_mouse_left_does_not_cancel_fade()
+  test_missing_unit_keeps_blizzard_lines()
   test_inspect_result_refreshes_shown_tooltip()
   test_refresh_skipped_when_another_unit_is_shown()
   test_combat_hide_hides_before_any_styling()

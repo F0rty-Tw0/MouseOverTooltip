@@ -33,9 +33,9 @@ local function onUnit(tooltip)
     HealthBar.HideBar(settings)
     return
   end
-  -- Mouse already left: the tooltip is fading, and Show() would cancel the
-  -- fade so it sticks to the cursor (target refreshes often in combat).
-  if unit == "mouseover" and not _G.UnitExists("mouseover") then
+  -- Unit gone: mouse left (tooltip fading; Show() would cancel the fade), or a
+  -- corpse tooltip names "target" with nothing targeted (UnitLevel reads 0).
+  if not _G.UnitExists(unit) then
     return
   end
   if CombatHide.ShouldHide(tooltip, settings) then
