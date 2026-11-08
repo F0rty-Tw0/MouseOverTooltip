@@ -281,6 +281,18 @@ local Defaults = {
       hint = "Hides tooltips for unit frames, like party frames, while you're in combat.",
     },
     {
+      key = "blizzardWorldInCombat",
+      default = false,
+      label = "Blizzard tooltip for world units in combat",
+      hint = "Shows the default Blizzard tooltip for characters in the game world in combat.",
+    },
+    {
+      key = "blizzardFramesInCombat",
+      default = false,
+      label = "Blizzard tooltip for unit frames in combat",
+      hint = "Shows the default Blizzard tooltip for unit frames, like party frames, in combat.",
+    },
+    {
       key = "shiftShowsHidden",
       default = true,
       label = "Shift shows hidden tooltips",

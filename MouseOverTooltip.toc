@@ -44,10 +44,10 @@ Data/EnemyForces.lua
 Tooltip/Lines.lua
 Tooltip/UnitTags.lua
 Tooltip/PlayerHeader.lua
+Tooltip/CombatHide.lua
 Tooltip/LineFilter.lua [AllowLoadGameType mainline]
 Tooltip/PlayerLines.lua
 Tooltip/NpcLines.lua
-Tooltip/CombatHide.lua
 Tooltip/HealthBar.lua
 Tooltip/Border.lua
 Tooltip/Anchor.lua
