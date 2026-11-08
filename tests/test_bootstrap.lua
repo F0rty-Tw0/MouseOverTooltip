@@ -24,6 +24,10 @@ _G.Settings = {
 function W.tooltip:SetScale(scale)
   self.scale = scale
 end
+_G.UNIT_POPUP_RIGHT_CLICK = "<Right click for Frame Settings>"
+_G.UnitFrame_UpdateTooltip = function()
+  W.SetTooltipLines("party1", { "Bob", _G.UNIT_POPUP_RIGHT_CLICK })
+end
 _G.MouseOverTooltipDB = { showTarget = true, removed = 1 }
 require("MouseOverTooltip.Bootstrap")
 
@@ -66,6 +70,11 @@ local function test_scale_slider_rescales_tooltip()
   Assert.equal(_G.MouseOverTooltipDB.tooltipScale, 150)
 end
 
+local function test_unit_frame_hint_reads_settings()
+  _G.UnitFrame_UpdateTooltip({})
+  Assert.equal(W.LineText(2), nil)
+end
+
 local function test_compartment_functions_are_global()
   Assert.equal(type(_G.MouseOverTooltip_OnAddonCompartmentClick), "function")
   Assert.equal(type(_G.MouseOverTooltip_OnAddonCompartmentEnter), "function")
@@ -75,6 +84,7 @@ end
 return function()
   test_other_addons_loading_are_ignored()
   test_addon_loaded_initializes_everything_once()
+  test_unit_frame_hint_reads_settings()
   test_compartment_functions_are_global()
   test_scale_slider_rescales_tooltip()
 end

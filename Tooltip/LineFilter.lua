@@ -3,6 +3,7 @@ if type(ns) ~= "table" then
   ns = {}
 end
 
+local CombatHide = ns.CombatHide or require("MouseOverTooltip.Tooltip.CombatHide")
 local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
 local Lines = ns.TooltipLines or require("MouseOverTooltip.Tooltip.Lines")
 local PlayerHeader = ns.PlayerHeader or require("MouseOverTooltip.Tooltip.PlayerHeader")
@@ -19,6 +20,9 @@ local playerData, className, pastLevel
 local function onUnitData(tooltip, tooltipData)
   playerData = nil
   if tooltip ~= _G.GameTooltip or not PlayerHeader.Wanted(settings) then
+    return
+  end
+  if CombatHide.ShowsBlizzard(tooltip, settings) then
     return
   end
   local guid = Secret.Clean(tooltipData.guid)

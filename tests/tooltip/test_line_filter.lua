@@ -90,6 +90,14 @@ local function test_keeps_blizzard_lines_when_header_is_off()
   end
 end
 
+local function test_stock_player_keeps_blizzard_lines()
+  db.blizzardWorldInCombat, W.inCombat = true, true
+  W.tooltip:SetOwner(_G.UIParent, "ANCHOR_NONE")
+  local kept = build("Player-1", PLAYER_LINES)
+  db.blizzardWorldInCombat, W.inCombat = false, false
+  Assert.equal(kept, table.concat(PLAYER_LINES, "|"))
+end
+
 local function test_keeps_secret_text()
   _G.issecretvalue = function(value)
     return value == "Alliance"
@@ -118,6 +126,7 @@ return function()
   test_keeps_lines_of_other_tooltips()
   test_keeps_lines_of_a_later_non_unit_tooltip()
   test_keeps_blizzard_lines_when_header_is_off()
+  test_stock_player_keeps_blizzard_lines()
   test_keeps_secret_text()
   test_forever_registers_nothing()
 end

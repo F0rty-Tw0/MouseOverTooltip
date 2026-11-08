@@ -41,7 +41,7 @@ function Bootstrap.Initialize(saved)
   if ns.LineFilter then
     ns.LineFilter.Install(db)
   end
-  UnitFrameHint.Install()
+  UnitFrameHint.Install(db)
   Anchor.Install(db)
   Scale.Install(db)
   Panel.Register(db, function(key, value)
