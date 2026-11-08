@@ -54,6 +54,14 @@ function HealthBar.HideBar(db)
   end
 end
 
+-- For a stock Blizzard tooltip: forgets the unit so the value hook stays hidden.
+function HealthBar.HideText()
+  shownUnit = nil
+  if text then
+    text:Hide()
+  end
+end
+
 function HealthBar.Apply(db, unit)
   settings, shownUnit = db, unit
   local bar = _G.GameTooltipStatusBar

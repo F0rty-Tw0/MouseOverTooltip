@@ -8,6 +8,7 @@ local CombatHide = ns.CombatHide or require("MouseOverTooltip.Tooltip.CombatHide
 local HealthBar = ns.HealthBar or require("MouseOverTooltip.Tooltip.HealthBar")
 local NpcLines = ns.NpcLines or require("MouseOverTooltip.Tooltip.NpcLines")
 local PlayerLines = ns.PlayerLines or require("MouseOverTooltip.Tooltip.PlayerLines")
+local Scale = ns.Scale or require("MouseOverTooltip.Tooltip.Scale")
 local Secret = ns.Secret or require("MouseOverTooltip.Core.Secret")
 
 local UnitTooltip = {}
@@ -17,6 +18,16 @@ local settings
 local function shownUnit(tooltip)
   local _, unit = tooltip:GetUnit()
   return Secret.Clean(unit)
+end
+
+-- Stock Blizzard tooltip: none of our lines, bar, border, scale or Show().
+local function keepStock(tooltip)
+  if not CombatHide.ShowsBlizzard(tooltip, settings) then
+    return false
+  end
+  HealthBar.HideText()
+  Scale.UseNormal(tooltip, settings)
+  return true
 end
 
 local function onUnit(tooltip)
@@ -30,7 +41,9 @@ local function onUnit(tooltip)
       tooltip:Hide()
       return
     end
-    HealthBar.HideBar(settings)
+    if not keepStock(tooltip) then
+      HealthBar.HideBar(settings)
+    end
     return
   end
   -- Unit gone: mouse left (tooltip fading; Show() would cancel the fade), or a
@@ -40,6 +53,9 @@ local function onUnit(tooltip)
   end
   if CombatHide.ShouldHide(tooltip, settings) then
     tooltip:Hide()
+    return
+  end
+  if keepStock(tooltip) then
     return
   end
   local guid = Secret.Clean(_G.UnitGUID(unit))

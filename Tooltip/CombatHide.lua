@@ -19,5 +19,17 @@ function CombatHide.ShouldHide(tooltip, db)
   return db.hideFramesInCombat == true
 end
 
+-- True when this tooltip should stay the stock Blizzard one. The anchor passes
+-- `owner` because the tooltip has no owner yet when its default anchor is set.
+function CombatHide.ShowsBlizzard(tooltip, db, owner)
+  if not (db.blizzardWorldInCombat or db.blizzardFramesInCombat) or not _G.InCombatLockdown() then
+    return false
+  end
+  if (owner or tooltip:GetOwner()) == _G.UIParent then
+    return db.blizzardWorldInCombat == true
+  end
+  return db.blizzardFramesInCombat == true
+end
+
 ns.CombatHide = CombatHide
 return CombatHide

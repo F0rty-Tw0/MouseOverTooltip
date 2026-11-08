@@ -3,6 +3,7 @@ if type(ns) ~= "table" then
   ns = {}
 end
 
+local CombatHide = ns.CombatHide or require("MouseOverTooltip.Tooltip.CombatHide")
 local Secret = ns.Secret or require("MouseOverTooltip.Core.Secret")
 
 -- Native cursor anchoring: the client moves the tooltip, no OnUpdate needed.
@@ -78,12 +79,36 @@ local function installOffsetHooks(tooltip)
   tooltip:HookScript("OnHide", onHide)
 end
 
+-- Guess: frames showing a unit carry a `unit` field or a secure unit attribute;
+-- action buttons have neither and keep the user's anchor.
+local function isUnitFrame(parent)
+  if Secret.Clean(parent.unit) ~= nil then
+    return true
+  end
+  return parent.GetAttribute ~= nil and Secret.Clean(parent:GetAttribute("unit")) ~= nil
+end
+
+-- A stock Blizzard tooltip keeps Blizzard's spot. World objects like herbs
+-- have no mouseover unit, so they still follow the cursor.
+local function keepsBlizzardAnchor(tooltip, parent)
+  if not (parent and CombatHide.ShowsBlizzard(tooltip, settings, parent)) then
+    return false
+  end
+  if parent == _G.UIParent then
+    return Secret.Clean(_G.UnitExists("mouseover")) and true or false
+  end
+  return isUnitFrame(parent)
+end
+
 local function onDefaultAnchor(tooltip, parent)
   if not (settings.followCursor and tooltip == _G.GameTooltip) then
     return
   end
   -- Nameplates are forbidden in instances; SetOwner on one throws from addon code.
   if parent and parent.IsForbidden and parent:IsForbidden() then
+    return
+  end
+  if keepsBlizzardAnchor(tooltip, parent) then
     return
   end
   local x = (settings.cursorOffsetX ~= 0 or settings.cursorOffsetY ~= 0) and centeredOffsetX(tooltip)
