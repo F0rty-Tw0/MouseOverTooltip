@@ -186,10 +186,11 @@ end
 
 local function test_defaults_button_uses_forever_values()
   FlavorCompat.isForever = true
-  db.showClassification, db.showItemLevel = false, true
+  db.showClassification, db.showItemLevel, db.rareBorder = false, true, false
   canvas:OnDefault()
   Assert.equal(db.showClassification, true)
   Assert.equal(db.showItemLevel, false)
+  Assert.equal(db.rareBorder, true)
   FlavorCompat.isForever = false
   canvas:OnDefault()
 end

@@ -74,6 +74,7 @@ local function test_forever_new_install_gets_forever_defaults()
   Assert.equal(db.showClassification, true)
   Assert.equal(db.grayTapped, true)
   Assert.equal(db.showItemLevel, false)
+  Assert.equal(db.rareBorder, true)
   Assert.equal(db.showQuest, true, "keys without foreverDefault keep default")
 end
 

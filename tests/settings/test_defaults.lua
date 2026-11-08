@@ -3,8 +3,8 @@ local Defaults = require("MouseOverTooltip.Settings.Defaults")
 
 local MAX_HINT = 90
 
--- Every setting as shipped before the tabbed panel: { default, min, max, requires }.
--- Saved settings carry over only while these stay identical.
+-- Every setting: { default, min, max, requires }. Guards saved-setting compatibility:
+-- saved settings carry over only while these stay identical.
 local SNAPSHOT = {
   colorName = { true },
   showGuild = { true },
@@ -41,6 +41,7 @@ local SNAPSHOT = {
   showRaidIcon = { false },
   showDeadTag = { false },
   classBorder = { false },
+  rareBorder = { false },
   itemQualityBorder = { false },
   hideWorldInCombat = { false },
   hideFramesInCombat = { false },
@@ -126,7 +127,7 @@ local function test_keys_and_defaults_unchanged()
   end
 end
 
-local FOREVER = { showClassification = true, grayTapped = true, showItemLevel = false }
+local FOREVER = { showClassification = true, grayTapped = true, showItemLevel = false, rareBorder = true }
 
 local function test_forever_defaults_unchanged()
   local seen = 0
@@ -136,7 +137,7 @@ local function test_forever_defaults_unchanged()
       Assert.equal(entry.foreverDefault, FOREVER[entry.key], entry.key .. " foreverDefault")
     end
   end
-  Assert.equal(seen, 3)
+  Assert.equal(seen, 4)
 end
 
 return function()

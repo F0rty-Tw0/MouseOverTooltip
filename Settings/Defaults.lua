@@ -252,6 +252,13 @@ local Defaults = {
       hint = "Colors the border by class for players, or by friend or foe for NPCs.",
     },
     {
+      key = "rareBorder",
+      default = false,
+      foreverDefault = true,
+      label = "Rare colored border",
+      hint = "Colors the border silver for rare NPCs and lilac for rare elites.",
+    },
+    {
       key = "itemQualityBorder",
       default = false,
       label = "Item quality colored border",
