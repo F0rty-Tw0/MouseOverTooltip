@@ -4,7 +4,7 @@ if type(ns) ~= "table" then
 end
 
 local Constants = {
-  VERSION = "v1.0.7",
+  VERSION = "v1.0.8",
   -- Player-visible name; the folder, saved variables and globals keep
   -- "MouseOverTooltip" so existing settings carry over.
   TITLE = "Mouseover Tooltip",

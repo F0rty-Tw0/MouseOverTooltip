@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-11-08
+
 - New "Rare colored border" option on the Look tab: silver for rare mobs, lilac for rare elites.
 - WoW: Forever: the rare border is on for everyone. New installs also start with rare/elite tags and tapped gray-out on, and item level off. Already installed? Change them in the Players and NPCs tabs, or press Defaults.
 

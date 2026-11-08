@@ -15,7 +15,7 @@
 ## Author: F0rty_tw0
 ## Category: Tooltip
 ## IconTexture: Interface\AddOns\MouseOverTooltip\Media\Icon
-## Version: v1.0.7
+## Version: v1.0.8
 ## SavedVariables: MouseOverTooltipDB
 ## X-Curse-Project-ID: 1714142
 ## AddonCompartmentFunc: MouseOverTooltip_OnAddonCompartmentClick
