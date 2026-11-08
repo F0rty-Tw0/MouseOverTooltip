@@ -7,7 +7,10 @@ local Secret = ns.Secret or require("MouseOverTooltip.Core.Secret")
 
 local Border = {}
 
-local RARE_COLORS = { rare = { 0.75, 0.75, 0.75 }, rareelite = { 0.78, 0.78, 1 } }
+local RARE_COLORS = {
+  rare = { r = 0.75, g = 0.75, b = 0.75 },
+  rareelite = { r = 0.78, g = 0.78, b = 1 },
+}
 
 local colored = false
 local resetHooked = false
@@ -53,14 +56,11 @@ function Border.Unit(tooltip, unit, db)
   if not (db.classBorder or db.rareBorder) then
     return
   end
-  if db.rareBorder then
-    local rare = RARE_COLORS[Secret.Clean(_G.UnitClassification(unit))]
-    if rare then
-      paint(tooltip, rare[1], rare[2], rare[3])
-      return
-    end
+  local classification = db.rareBorder and Secret.Clean(_G.UnitClassification(unit))
+  local color = classification and RARE_COLORS[classification]
+  if not color and db.classBorder then
+    color = unitColor(unit)
   end
-  local color = db.classBorder and unitColor(unit)
   if color then
     paint(tooltip, color.r, color.g, color.b)
   end

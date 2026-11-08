@@ -48,7 +48,6 @@ local function test_disabled_borders_touch_nothing()
 end
 
 local function startFresh(unit)
-  W.tooltip.borderColor = nil
   W.tooltip:Fire("OnTooltipCleared")
   W.tooltip.borderColor = nil
   W.units.mouseover = unit
@@ -82,6 +81,15 @@ local function test_rare_wins_over_reaction()
   Assert.equal(W.tooltip.borderColor[1], 0.75)
 end
 
+local function test_rare_border_off_keeps_reaction_on_rare_npc()
+  startFresh({ name = "Gazz", classification = "rare", reaction = 2 })
+  W.calls = {}
+  Border.Unit(W.tooltip, "mouseover", { classBorder = true, rareBorder = false })
+  Assert.equal(W.tooltip.borderColor[1], 1)
+  Assert.equal(W.tooltip.borderColor[2], 0)
+  Assert.equal(W.calls.UnitClassification, nil)
+end
+
 local function test_class_border_still_paints_normal_npc_with_both_on()
   startFresh({ name = "Boar", classification = "normal", reaction = 2 })
   Border.Unit(W.tooltip, "mouseover", { classBorder = true, rareBorder = true })
@@ -101,6 +109,10 @@ local function test_secret_classification_falls_back_to_reaction()
   startFresh({ name = "Gazz", classification = "rare", reaction = 2 })
   SecretBorder.Unit(W.tooltip, "mouseover", { classBorder = true, rareBorder = true })
   rawset(_G, "issecretvalue", nil)
+  package.loaded["Core.Secret"] = nil
+  package.loaded["MouseOverTooltip.Core.Secret"] = nil
+  package.loaded["Tooltip.Border"] = nil
+  package.loaded["MouseOverTooltip.Tooltip.Border"] = nil
   Assert.equal(W.tooltip.borderColor[1], 1)
   Assert.equal(W.tooltip.borderColor[2], 0)
 end
@@ -115,6 +127,7 @@ return function()
   test_rare_elite_border_lilac()
   test_rare_border_skips_elite()
   test_rare_wins_over_reaction()
+  test_rare_border_off_keeps_reaction_on_rare_npc()
   test_class_border_still_paints_normal_npc_with_both_on()
   test_secret_classification_falls_back_to_reaction()
 end
