@@ -130,7 +130,8 @@ end
 
 local SECRET_UNIT = {}
 
-local function test_secret_unit_stock_keeps_bar()
+-- Hovers a unit whose token is a secret (Mythic+), in combat, as a world unit.
+local function hoverSecretInCombat(keys)
   rawset(_G, "issecretvalue", function(v)
     return v == SECRET_UNIT
   end)
@@ -141,10 +142,13 @@ local function test_secret_unit_stock_keeps_bar()
     end
   end
   local secretDb = SavedState.Initialize(nil)
-  secretDb.hideHealthBar, secretDb.blizzardWorldInCombat = true, true
+  for key, value in pairs(keys) do
+    secretDb[key] = value
+  end
   require("MouseOverTooltip.Tooltip.UnitTooltip").Install(secretDb)
   W.inCombat = true
   W.tooltip:SetOwner(_G.UIParent, "ANCHOR_NONE")
+  W.tooltip:Show()
   _G.GameTooltipStatusBar:Show()
   local getUnit = W.tooltip.GetUnit
   W.tooltip.GetUnit = function()
@@ -155,7 +159,16 @@ local function test_secret_unit_stock_keeps_bar()
   W.inCombat = false
   rawset(_G, "issecretvalue", nil)
   package.loaded["Core.Secret"] = nil
+end
+
+local function test_secret_unit_stock_keeps_bar()
+  hoverSecretInCombat({ hideHealthBar = true, blizzardWorldInCombat = true })
   Assert.equal(_G.GameTooltipStatusBar.shown, true)
+end
+
+local function test_secret_unit_hide_beats_blizzard()
+  hoverSecretInCombat({ blizzardWorldInCombat = true, hideWorldInCombat = true, shiftShowsHidden = false })
+  Assert.equal(W.tooltip.shown, false)
 end
 
 return function()
@@ -166,4 +179,5 @@ return function()
   test_stock_hover_hides_custom_health_text()
   test_stock_unit_uses_normal_scale()
   test_secret_unit_stock_keeps_bar()
+  test_secret_unit_hide_beats_blizzard()
 end
