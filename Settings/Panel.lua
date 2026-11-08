@@ -199,9 +199,10 @@ end
 -- Walks the whole list, so settings on tabs never opened reset too.
 local function restoreDefaults()
   for _, entry in ipairs(Defaults.list) do
-    if entry.key and db[entry.key] ~= entry.default then
-      db[entry.key] = entry.default
-      onChanged(entry.key, entry.default)
+    local value = Defaults.Value(entry)
+    if entry.key and db[entry.key] ~= value then
+      db[entry.key] = value
+      onChanged(entry.key, value)
     end
   end
   refresh()

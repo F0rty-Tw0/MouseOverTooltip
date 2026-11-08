@@ -14,14 +14,14 @@ local SavedState = {}
 local function validValue(entry, value)
   if entry.min then
     if type(value) ~= "number" or value ~= value then
-      return entry.default
+      return Defaults.Value(entry)
     end
     return min(entry.max, max(entry.min, floor(value + 0.5)))
   end
   if type(value) == "boolean" then
     return value
   end
-  return entry.default
+  return Defaults.Value(entry)
 end
 
 -- Returns the account-wide settings table: saved values win, missing keys get
