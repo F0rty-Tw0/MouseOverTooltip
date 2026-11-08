@@ -97,24 +97,40 @@ local function test_class_border_still_paints_normal_npc_with_both_on()
   Assert.equal(W.tooltip.borderColor[2], 0)
 end
 
+local function forgetBorderModules()
+  package.loaded["Core.Secret"] = nil
+  package.loaded["MouseOverTooltip.Core.Secret"] = nil
+  package.loaded["Tooltip.Border"] = nil
+  package.loaded["MouseOverTooltip.Tooltip.Border"] = nil
+end
+
+-- Secret reads issecretvalue once at load, so the global can be restored right after require.
+local function loadBorderWithSecret(isSecret)
+  rawset(_G, "issecretvalue", isSecret)
+  forgetBorderModules()
+  local SecretBorder = require("MouseOverTooltip.Tooltip.Border")
+  rawset(_G, "issecretvalue", nil)
+  forgetBorderModules()
+  return SecretBorder
+end
+
 local function test_secret_classification_falls_back_to_reaction()
-  rawset(_G, "issecretvalue", function(v)
+  local SecretBorder = loadBorderWithSecret(function(v)
     return v == "rare"
   end)
-  package.loaded["Core.Secret"] = nil
-  package.loaded["MouseOverTooltip.Core.Secret"] = nil
-  package.loaded["Tooltip.Border"] = nil
-  package.loaded["MouseOverTooltip.Tooltip.Border"] = nil
-  local SecretBorder = require("MouseOverTooltip.Tooltip.Border")
   startFresh({ name = "Gazz", classification = "rare", reaction = 2 })
   SecretBorder.Unit(W.tooltip, "mouseover", { classBorder = true, rareBorder = true })
-  rawset(_G, "issecretvalue", nil)
-  package.loaded["Core.Secret"] = nil
-  package.loaded["MouseOverTooltip.Core.Secret"] = nil
-  package.loaded["Tooltip.Border"] = nil
-  package.loaded["MouseOverTooltip.Tooltip.Border"] = nil
   Assert.equal(W.tooltip.borderColor[1], 1)
   Assert.equal(W.tooltip.borderColor[2], 0)
+end
+
+local function test_secret_player_class_paints_no_border()
+  local SecretBorder = loadBorderWithSecret(function(v)
+    return v == "MAGE"
+  end)
+  startFresh({ name = "Bob", isPlayer = true, classFile = "MAGE" })
+  SecretBorder.Unit(W.tooltip, "mouseover", { classBorder = true })
+  Assert.equal(W.tooltip.borderColor, nil)
 end
 
 return function()
@@ -130,4 +146,5 @@ return function()
   test_rare_border_off_keeps_reaction_on_rare_npc()
   test_class_border_still_paints_normal_npc_with_both_on()
   test_secret_classification_falls_back_to_reaction()
+  test_secret_player_class_paints_no_border()
 end
