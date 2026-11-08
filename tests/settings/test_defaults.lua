@@ -1,5 +1,6 @@
 local Assert = require("tests.helpers.assert")
 local Defaults = require("MouseOverTooltip.Settings.Defaults")
+local FlavorCompat = require("MouseOverTooltip.Core.FlavorCompat")
 
 local MAX_HINT = 90
 
@@ -50,15 +51,26 @@ local SNAPSHOT = {
   minimapButton = { true },
 }
 
+-- Every setting that carries a foreverDefault, and its WoW: Forever value.
+local FOREVER = { showClassification = true, grayTapped = true, showItemLevel = false, rareBorder = true }
+
+local function count(t)
+  local total = 0
+  for _ in pairs(t) do
+    total = total + 1
+  end
+  return total
+end
+
 local function settings()
-  local byKey, count = {}, 0
+  local byKey, total = {}, 0
   for _, entry in ipairs(Defaults.list) do
     if entry.key then
       byKey[entry.key] = entry
-      count = count + 1
+      total = total + 1
     end
   end
-  return byKey, count
+  return byKey, total
 end
 
 local function test_first_entry_is_a_tab()
@@ -111,12 +123,8 @@ local function test_child_requires_matches_parent()
 end
 
 local function test_keys_and_defaults_unchanged()
-  local byKey, count = settings()
-  local expectedCount = 0
-  for _ in pairs(SNAPSHOT) do
-    expectedCount = expectedCount + 1
-  end
-  Assert.equal(count, expectedCount)
+  local byKey, total = settings()
+  Assert.equal(total, count(SNAPSHOT))
   for key, entry in pairs(byKey) do
     local expected = SNAPSHOT[key]
     Assert.equal(expected ~= nil, true, key .. " is a known setting")
@@ -127,8 +135,6 @@ local function test_keys_and_defaults_unchanged()
   end
 end
 
-local FOREVER = { showClassification = true, grayTapped = true, showItemLevel = false, rareBorder = true }
-
 local function test_forever_defaults_unchanged()
   local seen = 0
   for _, entry in ipairs(Defaults.list) do
@@ -137,11 +143,33 @@ local function test_forever_defaults_unchanged()
       Assert.equal(entry.foreverDefault, FOREVER[entry.key], entry.key .. " foreverDefault")
     end
   end
-  Assert.equal(seen, 4)
+  Assert.equal(seen, count(FOREVER))
+end
+
+local function valueOnFlavor(entry, isForever)
+  local previous = FlavorCompat.isForever
+  FlavorCompat.isForever = isForever
+  local value = Defaults.Value(entry)
+  FlavorCompat.isForever = previous
+  return value
+end
+
+local function test_value_prefers_forever_default_on_forever()
+  local entry = { default = false, foreverDefault = true }
+  Assert.equal(valueOnFlavor(entry, true), true)
+  Assert.equal(valueOnFlavor(entry, false), false)
+end
+
+local function test_value_keeps_false_forever_override()
+  local entry = { default = true, foreverDefault = false }
+  Assert.equal(valueOnFlavor(entry, true), false)
+  Assert.equal(valueOnFlavor({ default = true }, true), true)
 end
 
 return function()
   test_forever_defaults_unchanged()
+  test_value_prefers_forever_default_on_forever()
+  test_value_keeps_false_forever_override()
   test_first_entry_is_a_tab()
   test_tabs_in_order()
   test_every_setting_has_a_short_hint()

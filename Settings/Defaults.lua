@@ -3,6 +3,8 @@ if type(ns) ~= "table" then
   ns = {}
 end
 
+local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
+
 -- One ordered list drives SavedVariables defaults and the options panel.
 -- `{ tab = "Name" }` starts a panel tab; its value is both the tab's identity
 -- and its English button text. Every entry after it belongs to that tab.
@@ -15,7 +17,6 @@ end
 -- `min`/`max` make a numeric slider setting; `sameRow` puts it beside the
 -- previous slider; `labelWidth` widens its label column; `suffix` follows
 -- the shown value.
-local FlavorCompat = ns.FlavorCompat or require("MouseOverTooltip.Core.FlavorCompat")
 
 local OFFSET_HINT = "Moves the tooltip away from the cursor, in pixels. Needs 'Tooltip follows cursor'."
 local OFFSET_LIMIT = 100
