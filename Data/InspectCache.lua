@@ -139,7 +139,8 @@ local function notifyReady(guid)
   end
 end
 
--- Retail PvP ratings arrive with the inspect data (no honor request there).
+-- Retail PvP ratings arrive with the inspect data (no honor request there):
+-- INSPECT_HONOR_UPDATE fires just before INSPECT_READY.
 local function onEvent(_, _event, guid)
   if not waiting or Secret.Is(guid) or guid ~= inflightGuid then
     return
