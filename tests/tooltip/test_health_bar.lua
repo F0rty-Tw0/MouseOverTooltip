@@ -62,6 +62,17 @@ local function test_hide_text_survives_value_change()
   Assert.equal(created[1].shown, false)
 end
 
+-- A unit frame token like "party2" names the previous unit, not a secret one.
+local function test_unknown_unit_hides_previous_unit_frame_health()
+  local db = { healthText = true, hideHealthBar = false }
+  W.units.party2 = { name = "Amy", health = 1000, healthMax = 2000 }
+  HealthBar.Apply(db, "party2")
+  HealthBar.HideBar(db)
+  bar:Fire("OnValueChanged", 0.5)
+  W.units.party2 = nil
+  Assert.equal(created[1].shown, false)
+end
+
 local function test_secret_health_is_abbreviated_without_comparing()
   local marker = secret
   rawset(_G, "issecretvalue", function(v)
@@ -93,6 +104,7 @@ return function()
   test_everything_off_creates_nothing()
   test_health_text_shows_unit_health_not_bar_fraction()
   test_hide_text_survives_value_change()
+  test_unknown_unit_hides_previous_unit_frame_health()
   test_secret_health_is_abbreviated_without_comparing()
   test_disabling_health_text_hides_it()
   test_hide_health_bar()
