@@ -129,7 +129,7 @@ local function test_queued_request_dropped_when_combat_starts()
   W.inCombat = true
   W.RunTimers()
   Assert.equal(W.calls.NotifyInspect, nil, "not sent after the pull")
-  Assert.equal(ready[1], "Player-1", "tooltip rebuilt without the placeholder")
+  Assert.equal(ready[1], "Player-1", "dropped request still reports ready")
 end
 
 local function test_timeout_unregisters_event()
