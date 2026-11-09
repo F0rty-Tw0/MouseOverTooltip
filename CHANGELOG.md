@@ -6,6 +6,8 @@ All releases: **1.0.x (current)** · [0.1.x](archive/changelog/0.1.md)
 
 ## [Unreleased]
 
+- Fixed: the Mythic+ rating could stay missing for players outside your group when item level, spec and PvP rating were all turned off.
+
 ## [1.0.9] - 2026-11-09
 
 - New Combat options: show the default Blizzard tooltip in combat, separately for characters in the world and for unit frames.
