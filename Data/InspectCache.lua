@@ -140,7 +140,7 @@ local function notifyReady(guid)
 end
 
 -- Gear often isn't loaded yet at INSPECT_READY, so the item level reads 0.
--- Caching that would hide the line for the whole TTL.
+-- The spec is still cached, but a later hover re-inspects for the item level.
 local function missingItemLevel(ilvl)
   return not (ilvl and ilvl > 0) and deps.wantsItemLevel and deps.wantsItemLevel()
 end
@@ -154,13 +154,12 @@ local function onEvent(_, _event, guid)
   local unit = resolveUnit(inflightUnit, guid)
   if unit then
     local ilvl, specID = readUnit(unit, false)
+    store(guid, ilvl, specID)
+    if deps.wantsPvp and deps.wantsPvp() and deps.readPvp then
+      cache[guid].pvpRating, cache[guid].pvpBracket = deps.readPvp()
+    end
     if missingItemLevel(ilvl) then
       failedGuid = guid
-    else
-      store(guid, ilvl, specID)
-      if deps.wantsPvp and deps.wantsPvp() and deps.readPvp then
-        cache[guid].pvpRating, cache[guid].pvpBracket = deps.readPvp()
-      end
     end
   end
   finish()
@@ -219,13 +218,14 @@ local function inCombatSkip()
 end
 
 function InspectCache.Request(unit, guid)
-  if guid == nil or Secret.Is(guid) or guid == inflightGuid or guid == queuedGuid or InspectCache.Get(guid) then
-    return
-  end
-  if guid == failedGuid then
+  if guid == nil or Secret.Is(guid) or guid == inflightGuid or guid == queuedGuid or guid == failedGuid then
     return
   end
   failedGuid = nil
+  local entry = InspectCache.Get(guid)
+  if entry and not missingItemLevel(entry.ilvl) then
+    return
+  end
   if guid == Secret.Clean(_G.UnitGUID("player")) then
     store(guid, readUnit(unit, true))
     return

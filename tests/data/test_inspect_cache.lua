@@ -166,19 +166,48 @@ local function test_hovering_another_player_allows_retry_after_timeout()
 end
 
 -- Gear data often isn't loaded yet at INSPECT_READY, so the item level reads 0.
-local function test_zero_item_level_is_not_cached_and_retried_later()
-  local InspectCache, ready = setup({ wantsItemLevel = true })
+local function test_zero_item_level_keeps_spec_and_pvp()
+  local InspectCache, ready = setup({
+    wantsItemLevel = true,
+    wantsPvp = true,
+    readPvp = function()
+      return 2100, "3v3"
+    end,
+  })
   W.units.mouseover.ilvl = 0
   hoverAndWait(InspectCache, "mouseover", "Player-1")
   inspectFrame():FireEvent("INSPECT_READY", "Player-1")
-  Assert.equal(InspectCache.Get("Player-1"), nil, "not cached for the full TTL")
-  Assert.equal(ready[1], "Player-1", "tooltip rebuilt without the placeholder")
+  local entry = InspectCache.Get("Player-1")
+  Assert.equal(entry.ilvl, nil)
+  Assert.equal(entry.specID, 64)
+  Assert.equal(entry.pvpRating, 2100)
+  Assert.equal(ready[1], "Player-1", "onReady fired")
+end
+
+local function test_zero_item_level_is_retried_on_a_later_hover()
+  local InspectCache = setup({ wantsItemLevel = true })
+  W.units.mouseover.ilvl = 0
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  inspectFrame():FireEvent("INSPECT_READY", "Player-1")
   InspectCache.Request("mouseover", "Player-1")
   Assert.equal(InspectCache.IsPending("Player-1"), false, "no retry loop while hovering")
   W.units.target = { name = "Amy", guid = "Player-2", isPlayer = true }
   InspectCache.Request("target", "Player-2")
   InspectCache.Request("mouseover", "Player-1")
   Assert.equal(InspectCache.IsPending("Player-1"), true, "retried on a later hover")
+end
+
+local function test_zero_item_level_is_retried_after_hovering_a_cached_player()
+  local InspectCache = setup({ wantsItemLevel = true })
+  W.units.target = { name = "Amy", guid = "Player-2", isPlayer = true, ilvl = 600 }
+  hoverAndWait(InspectCache, "target", "Player-2")
+  inspectFrame():FireEvent("INSPECT_READY", "Player-2")
+  W.units.mouseover.ilvl = 0
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  inspectFrame():FireEvent("INSPECT_READY", "Player-1")
+  InspectCache.Request("target", "Player-2")
+  InspectCache.Request("mouseover", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), true)
 end
 
 local function test_zero_item_level_still_caches_spec_when_item_level_off()
@@ -361,7 +390,9 @@ return function()
   test_pending_from_hover_until_data_arrives()
   test_timeout_refreshes_and_does_not_retry_same_player()
   test_hovering_another_player_allows_retry_after_timeout()
-  test_zero_item_level_is_not_cached_and_retried_later()
+  test_zero_item_level_keeps_spec_and_pvp()
+  test_zero_item_level_is_retried_on_a_later_hover()
+  test_zero_item_level_is_retried_after_hovering_a_cached_player()
   test_zero_item_level_still_caches_spec_when_item_level_off()
   test_dropped_request_refreshes_tooltip()
   test_other_inspects_are_ignored()
