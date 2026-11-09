@@ -6,9 +6,14 @@ local HINT = "<Right click for Frame Settings>"
 _G.UNIT_POPUP_RIGHT_CLICK = HINT
 
 -- Mirrors Blizzard's UnitFrame_UpdateTooltip: unit lines, a blank line, then the hint.
+-- hideOnSetUnit stands in for our SetUnit post-hook hiding the tooltip.
 local blizzardLines = { "Bob", "Level 80 Human Mage (Player)" }
+local hideOnSetUnit = false
 _G.UnitFrame_UpdateTooltip = function(_frame)
   W.SetTooltipLines("party1", blizzardLines)
+  if hideOnSetUnit then
+    W.tooltip:Hide()
+  end
   W.tooltip:AddLine(" ")
   W.tooltip:AddLine(HINT)
 end
@@ -44,6 +49,21 @@ local function test_stock_frame_keeps_right_click_hint()
   Assert.equal(W.LineText(4), HINT)
 end
 
+local function test_combat_hidden_frame_tooltip_stays_hidden()
+  db.hideFramesInCombat, W.inCombat, hideOnSetUnit = true, true, true
+  W.tooltip:SetOwner({}, "ANCHOR_NONE")
+  _G.UnitFrame_UpdateTooltip({})
+  db.hideFramesInCombat, W.inCombat, hideOnSetUnit = false, false, false
+  Assert.equal(W.tooltip.shown, false)
+end
+
+local function test_hidden_tooltip_is_not_reshown()
+  hideOnSetUnit = true
+  _G.UnitFrame_UpdateTooltip({})
+  hideOnSetUnit = false
+  Assert.equal(W.tooltip.shown, false)
+end
+
 local function test_tooltip_without_hint_is_untouched()
   W.SetTooltipLines("mouseover", { "Bob", " ", "Some quest" })
   _G.UnitFrame_UpdateTooltip = function() end
@@ -67,6 +87,8 @@ return function()
   test_blank_line_above_hint_is_removed()
   test_unit_lines_are_kept()
   test_stock_frame_keeps_right_click_hint()
+  test_combat_hidden_frame_tooltip_stays_hidden()
+  test_hidden_tooltip_is_not_reshown()
   test_tooltip_without_hint_is_untouched()
   test_no_hook_when_blizzard_function_missing()
 end
