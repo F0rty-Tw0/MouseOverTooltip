@@ -5,17 +5,24 @@ local W = Wow.Install()
 local HINT = "<Right click for Frame Settings>"
 _G.UNIT_POPUP_RIGHT_CLICK = HINT
 
--- Mirrors Blizzard's UnitFrame_UpdateTooltip: unit lines, a blank line, then the hint.
--- hideOnSetUnit stands in for our SetUnit post-hook hiding the tooltip.
+-- Mirrors Blizzard's UnitFrame_UpdateTooltip: when SetUnit succeeds it adds a
+-- blank line and the hint, then calls Show() itself, before our post-hook runs.
+-- hideOnSetUnit stands in for our SetUnit post-hook hiding the tooltip;
+-- setUnitFails for a SetUnit that returns false (Blizzard then adds nothing).
 local blizzardLines = { "Bob", "Level 80 Human Mage (Player)" }
 local hideOnSetUnit = false
+local setUnitFails = false
 _G.UnitFrame_UpdateTooltip = function(_frame)
+  if setUnitFails then
+    return
+  end
   W.SetTooltipLines("party1", blizzardLines)
   if hideOnSetUnit then
     W.tooltip:Hide()
   end
   W.tooltip:AddLine(" ")
   W.tooltip:AddLine(HINT)
+  W.tooltip:Show()
 end
 
 local db = { blizzardWorldInCombat = false, blizzardFramesInCombat = false }
@@ -58,9 +65,11 @@ local function test_combat_hidden_frame_tooltip_stays_hidden()
 end
 
 local function test_hidden_tooltip_is_not_reshown()
-  hideOnSetUnit = true
+  W.SetTooltipLines("party1", { "Bob", " ", HINT })
+  W.tooltip:Hide()
+  setUnitFails = true
   _G.UnitFrame_UpdateTooltip({})
-  hideOnSetUnit = false
+  setUnitFails = false
   Assert.equal(W.tooltip.shown, false)
 end
 

@@ -25,8 +25,13 @@ end
 
 local function stripHint()
   local tooltip = _G.GameTooltip
-  -- The Show() below must not undo a combat hide from the SetUnit hook.
-  if not tooltip:IsShown() or CombatHide.ShouldHide(tooltip, settings) then
+  if not tooltip:IsShown() then
+    return
+  end
+  -- Blizzard calls Show() after adding the hint, undoing the combat hide from
+  -- the SetUnit hook. This hook runs after that Show(), so hide again here.
+  if CombatHide.ShouldHide(tooltip, settings) then
+    tooltip:Hide()
     return
   end
   if CombatHide.ShowsBlizzard(tooltip, settings) then
