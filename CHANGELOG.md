@@ -6,6 +6,7 @@ All releases: **1.1.x (current)** · [1.0.x](archive/changelog/1.0.md) · [0.1.x
 
 ## [Unreleased]
 
+- Fixed: a player whose gear hadn't loaded yet could show no item level for up to 5 minutes. Hover another player and back to try again.
 - Fixed: the Mythic+ rating could stay missing for players outside your group when item level, spec and PvP rating were all turned off.
 
 ## [1.1.1] - 2026-11-12

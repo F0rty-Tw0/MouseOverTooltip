@@ -30,6 +30,9 @@ local function setup(options)
       return options.wantsPvp == true
     end,
     readPvp = options.readPvp,
+    wantsItemLevel = function()
+      return options.wantsItemLevel == true
+    end,
   })
   W.units.mouseover = { name = "Bob", guid = "Player-1", isPlayer = true, ilvl = 639, specID = 64 }
   return InspectCache, ready
@@ -160,6 +163,30 @@ local function test_hovering_another_player_allows_retry_after_timeout()
   InspectCache.Request("target", "Player-2")
   InspectCache.Request("mouseover", "Player-1")
   Assert.equal(InspectCache.IsPending("Player-1"), true)
+end
+
+-- Gear data often isn't loaded yet at INSPECT_READY, so the item level reads 0.
+local function test_zero_item_level_is_not_cached_and_retried_later()
+  local InspectCache, ready = setup({ wantsItemLevel = true })
+  W.units.mouseover.ilvl = 0
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  inspectFrame():FireEvent("INSPECT_READY", "Player-1")
+  Assert.equal(InspectCache.Get("Player-1"), nil, "not cached for the full TTL")
+  Assert.equal(ready[1], "Player-1", "tooltip rebuilt without the placeholder")
+  InspectCache.Request("mouseover", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), false, "no retry loop while hovering")
+  W.units.target = { name = "Amy", guid = "Player-2", isPlayer = true }
+  InspectCache.Request("target", "Player-2")
+  InspectCache.Request("mouseover", "Player-1")
+  Assert.equal(InspectCache.IsPending("Player-1"), true, "retried on a later hover")
+end
+
+local function test_zero_item_level_still_caches_spec_when_item_level_off()
+  local InspectCache = setup({ wantsItemLevel = false })
+  W.units.mouseover.ilvl = 0
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  inspectFrame():FireEvent("INSPECT_READY", "Player-1")
+  Assert.equal(InspectCache.Get("Player-1").specID, 64)
 end
 
 local function test_dropped_request_refreshes_tooltip()
@@ -334,6 +361,8 @@ return function()
   test_pending_from_hover_until_data_arrives()
   test_timeout_refreshes_and_does_not_retry_same_player()
   test_hovering_another_player_allows_retry_after_timeout()
+  test_zero_item_level_is_not_cached_and_retried_later()
+  test_zero_item_level_still_caches_spec_when_item_level_off()
   test_dropped_request_refreshes_tooltip()
   test_other_inspects_are_ignored()
   test_cache_is_capped_at_100_evicting_oldest()

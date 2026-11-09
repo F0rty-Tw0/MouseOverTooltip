@@ -27,8 +27,8 @@ local inflightUnit, inflightGuid
 local queuedUnit, queuedGuid
 local queuedAt = 0
 local waiting = false
--- Timed out: not retried until another player is hovered, or every tooltip
--- rebuild would re-request it.
+-- Timed out or came back without an item level: not retried until another
+-- player is hovered, or every tooltip rebuild would re-request it.
 local failedGuid
 local timerQueued = false
 local lastNotify = -math.huge
@@ -81,7 +81,7 @@ local function store(guid, ilvl, specID)
   entry.time = _G.GetTime()
 end
 
-local function readUnit(unit, guid, isSelf)
+local function readUnit(unit, isSelf)
   local ilvl, specID
   if isSelf then
     if type(_G.GetAverageItemLevel) == "function" then
@@ -102,7 +102,7 @@ local function readUnit(unit, guid, isSelf)
       specID = Secret.Clean(getSpec(unit))
     end
   end
-  store(guid, ilvl, specID)
+  return ilvl, specID
 end
 
 local schedule
@@ -139,6 +139,12 @@ local function notifyReady(guid)
   end
 end
 
+-- Gear often isn't loaded yet at INSPECT_READY, so the item level reads 0.
+-- Caching that would hide the line for the whole TTL.
+local function missingItemLevel(ilvl)
+  return not (ilvl and ilvl > 0) and deps.wantsItemLevel and deps.wantsItemLevel()
+end
+
 -- Retail PvP ratings arrive with the inspect data (no honor request there):
 -- INSPECT_HONOR_UPDATE fires just before INSPECT_READY.
 local function onEvent(_, _event, guid)
@@ -147,10 +153,14 @@ local function onEvent(_, _event, guid)
   end
   local unit = resolveUnit(inflightUnit, guid)
   if unit then
-    readUnit(unit, guid, false)
-    local entry = cache[guid]
-    if deps.wantsPvp and deps.wantsPvp() and deps.readPvp then
-      entry.pvpRating, entry.pvpBracket = deps.readPvp()
+    local ilvl, specID = readUnit(unit, false)
+    if missingItemLevel(ilvl) then
+      failedGuid = guid
+    else
+      store(guid, ilvl, specID)
+      if deps.wantsPvp and deps.wantsPvp() and deps.readPvp then
+        cache[guid].pvpRating, cache[guid].pvpBracket = deps.readPvp()
+      end
     end
   end
   finish()
@@ -217,7 +227,7 @@ function InspectCache.Request(unit, guid)
   end
   failedGuid = nil
   if guid == Secret.Clean(_G.UnitGUID("player")) then
-    readUnit(unit, guid, true)
+    store(guid, readUnit(unit, true))
     return
   end
   if inCombatSkip() or not _G.CanInspect(unit) then
