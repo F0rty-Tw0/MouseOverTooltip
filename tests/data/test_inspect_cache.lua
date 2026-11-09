@@ -322,7 +322,35 @@ local function test_secret_self_check_reads_self_by_guid()
   package.loaded["Core.Secret"] = nil
 end
 
+-- Your own gear and spec are local reads: fresh on every hover, never cached.
+local function test_self_is_read_live_without_a_cache_slot()
+  local InspectCache = setup()
+  W.units.player = { name = "Me", guid = "Player-me", isPlayer = true }
+  local equipped, specIndex = 650, 1
+  rawset(_G, "GetAverageItemLevel", function()
+    return 660, equipped
+  end)
+  rawset(_G, "GetSpecialization", function()
+    return specIndex
+  end)
+  rawset(_G, "GetSpecializationInfo", function(index)
+    return index == 1 and 64 or 63
+  end)
+  InspectCache.Request("player", "Player-me")
+  Assert.equal(InspectCache.Get("Player-me").ilvl, 650, "first hover")
+  equipped, specIndex = 655.7, 2
+  local entry = InspectCache.Get("Player-me")
+  Assert.equal(entry.ilvl, 655, "gear change")
+  Assert.equal(entry.specID, 63, "spec change")
+  Assert.equal(InspectCache.Count(), 0, "no cache slot")
+  Assert.equal(W.calls.NotifyInspect, nil)
+  rawset(_G, "GetAverageItemLevel", nil)
+  rawset(_G, "GetSpecialization", nil)
+  rawset(_G, "GetSpecializationInfo", nil)
+end
+
 return function()
+  test_self_is_read_live_without_a_cache_slot()
   test_event_not_registered_until_first_request()
   test_request_inspects_and_caches_on_ready()
   test_fresh_cache_skips_notify_inspect()
