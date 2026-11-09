@@ -62,14 +62,19 @@ local function isSelf(guid)
   return guid ~= nil and guid == playerGuid
 end
 
+local function wants(key)
+  return deps[key] and deps[key]()
+end
+
+-- Only the lines that are on are read.
 local function readSelf()
   local ilvl, specID
-  if type(_G.GetAverageItemLevel) == "function" then
-    ilvl = select(2, _G.GetAverageItemLevel())
+  if wants("wantsItemLevel") and type(_G.GetAverageItemLevel) == "function" then
+    ilvl = Secret.Clean(select(2, _G.GetAverageItemLevel()))
   end
-  if type(_G.GetSpecialization) == "function" and type(_G.GetSpecializationInfo) == "function" then
-    local index = _G.GetSpecialization()
-    specID = index and _G.GetSpecializationInfo(index)
+  if wants("wantsSpec") and type(_G.GetSpecialization) == "function" and type(_G.GetSpecializationInfo) == "function" then
+    local index = Secret.Clean(_G.GetSpecialization())
+    specID = index and Secret.Clean(_G.GetSpecializationInfo(index))
   end
   fill(selfEntry, ilvl, specID)
   return selfEntry

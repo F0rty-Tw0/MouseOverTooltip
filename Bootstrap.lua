@@ -35,6 +35,12 @@ function Bootstrap.Initialize(saved)
       return db.showPvpRating and FlavorCompat.hasPvpRating
     end,
     readPvp = PvP.Read,
+    wantsItemLevel = function()
+      return db.showItemLevel and FlavorCompat.hasItemLevel
+    end,
+    wantsSpec = function()
+      return db.showSpec and FlavorCompat.hasSpec
+    end,
   })
   UnitTooltip.Install(db)
   -- Retail-only file: absent on Classic, so no require fallback here.

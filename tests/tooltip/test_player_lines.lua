@@ -294,11 +294,17 @@ local function test_hovering_yourself_shows_live_item_level()
     return 660, equipped
   end)
   local db = with({ showItemLevel = true })
+  InspectCache.Configure({
+    wantsItemLevel = function()
+      return db.showItemLevel
+    end,
+  })
   hover(db, { guid = "Player-me" })
   Assert.contains(W.AllText(), "|cffffd100iLvl|r |cffa335ee650|r", "first hover")
   equipped = 655
   hover(db, { guid = "Player-me" })
   Assert.contains(W.AllText(), "|cffffd100iLvl|r |cffa335ee655|r", "gear change shows next hover")
+  InspectCache.Configure({})
   rawset(_G, "GetAverageItemLevel", nil)
 end
 
