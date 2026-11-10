@@ -10,6 +10,8 @@ local tostring = tostring
 
 local HealthBar = {}
 
+local MOUSEOVER = "mouseover"
+
 local settings
 local shownUnit
 local text
@@ -46,11 +48,16 @@ local function onValueChanged()
   text:Show()
 end
 
--- For a tooltip whose unit is unknown: hides the bar, leaves the text's unit.
+-- For a tooltip whose unit is unknown: hides the bar. Keeps the text's unit only
+-- if it is "mouseover", which still names the hovered unit; any other token
+-- (a unit frame's "party2", "target") names the previous unit, so forget it.
 function HealthBar.HideBar(db)
   local bar = _G.GameTooltipStatusBar
   if bar and db.hideHealthBar then
     bar:Hide()
+  end
+  if shownUnit ~= MOUSEOVER then
+    HealthBar.HideText()
   end
 end
 
