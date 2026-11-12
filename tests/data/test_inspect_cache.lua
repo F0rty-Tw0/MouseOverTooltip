@@ -30,6 +30,12 @@ local function setup(options)
       return options.wantsPvp == true
     end,
     readPvp = options.readPvp,
+    wantsItemLevel = function()
+      return options.wantsItemLevel ~= false
+    end,
+    wantsSpec = function()
+      return options.wantsSpec ~= false
+    end,
   })
   W.units.mouseover = { name = "Bob", guid = "Player-1", isPlayer = true, ilvl = 639, specID = 64 }
   return InspectCache, ready
@@ -322,7 +328,105 @@ local function test_secret_self_check_reads_self_by_guid()
   package.loaded["Core.Secret"] = nil
 end
 
+-- Your own gear and spec are local reads: fresh on every hover, never cached.
+local function test_self_is_read_live_without_a_cache_slot()
+  local InspectCache = setup()
+  W.units.player = { name = "Me", guid = "Player-me", isPlayer = true }
+  local equipped, specIndex = 650, 1
+  rawset(_G, "GetAverageItemLevel", function()
+    return 660, equipped
+  end)
+  rawset(_G, "GetSpecialization", function()
+    return specIndex
+  end)
+  rawset(_G, "GetSpecializationInfo", function(index)
+    return index == 1 and 64 or 63
+  end)
+  InspectCache.Request("player", "Player-me")
+  Assert.equal(InspectCache.Get("Player-me").ilvl, 650, "first hover")
+  equipped, specIndex = 655.7, 2
+  local entry = InspectCache.Get("Player-me")
+  Assert.equal(entry.ilvl, 655, "gear change")
+  Assert.equal(entry.specID, 63, "spec change")
+  Assert.equal(InspectCache.Count(), 0, "no cache slot")
+  Assert.equal(W.calls.NotifyInspect, nil)
+  rawset(_G, "GetAverageItemLevel", nil)
+  rawset(_G, "GetSpecialization", nil)
+  rawset(_G, "GetSpecializationInfo", nil)
+end
+
+-- Counts calls to the self-read APIs; returns the counter table.
+local function stubSelfApis(ilvl, specID)
+  W.units.player = { name = "Me", guid = "Player-me", isPlayer = true }
+  local calls = { ilvl = 0, spec = 0 }
+  rawset(_G, "GetAverageItemLevel", function()
+    calls.ilvl = calls.ilvl + 1
+    return 660, ilvl
+  end)
+  rawset(_G, "GetSpecialization", function()
+    calls.spec = calls.spec + 1
+    return 1
+  end)
+  rawset(_G, "GetSpecializationInfo", function()
+    return specID
+  end)
+  return calls
+end
+
+local function clearSelfApis()
+  rawset(_G, "GetAverageItemLevel", nil)
+  rawset(_G, "GetSpecialization", nil)
+  rawset(_G, "GetSpecializationInfo", nil)
+end
+
+local function test_self_item_level_off_skips_its_api()
+  local InspectCache = setup({ wantsItemLevel = false })
+  local calls = stubSelfApis(650, 64)
+  local entry = InspectCache.Get("Player-me")
+  Assert.equal(calls.ilvl, 0, "GetAverageItemLevel not called")
+  Assert.equal(entry.ilvl, nil)
+  Assert.equal(entry.specID, 64, "spec still read")
+  clearSelfApis()
+end
+
+local function test_self_spec_off_skips_its_api()
+  local InspectCache = setup({ wantsSpec = false })
+  local calls = stubSelfApis(650, 64)
+  local entry = InspectCache.Get("Player-me")
+  Assert.equal(calls.spec, 0, "GetSpecialization not called")
+  Assert.equal(entry.specID, nil)
+  Assert.equal(entry.ilvl, 650, "item level still read")
+  clearSelfApis()
+end
+
+-- A secret self value skips its line instead of erroring on compare.
+local function test_secret_self_values_skip_the_lines()
+  setup()
+  local marker = {}
+  rawset(_G, "issecretvalue", function(v)
+    return v == marker
+  end)
+  package.loaded["Core.Secret"] = nil
+  package.loaded["Data.InspectCache"] = nil
+  local InspectCache = require("MouseOverTooltip.Data.InspectCache")
+  local always = function()
+    return true
+  end
+  InspectCache.Configure({ wantsItemLevel = always, wantsSpec = always })
+  stubSelfApis(marker, marker)
+  local entry = InspectCache.Get("Player-me")
+  Assert.equal(entry.ilvl, nil, "secret item level skipped")
+  Assert.equal(entry.specID, nil, "secret spec skipped")
+  clearSelfApis()
+  rawset(_G, "issecretvalue", nil)
+  package.loaded["Core.Secret"] = nil
+end
+
 return function()
+  test_self_is_read_live_without_a_cache_slot()
+  test_self_item_level_off_skips_its_api()
+  test_self_spec_off_skips_its_api()
+  test_secret_self_values_skip_the_lines()
   test_event_not_registered_until_first_request()
   test_request_inspects_and_caches_on_ready()
   test_fresh_cache_skips_notify_inspect()

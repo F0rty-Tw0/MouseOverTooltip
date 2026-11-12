@@ -288,6 +288,26 @@ local function test_raid_icon_dead_and_friend_tags_on_name()
   Assert.contains(W.LineText(1), "(Friend)")
 end
 
+local function test_hovering_yourself_shows_live_item_level()
+  local equipped = 650
+  rawset(_G, "GetAverageItemLevel", function()
+    return 660, equipped
+  end)
+  local db = with({ showItemLevel = true })
+  InspectCache.Configure({
+    wantsItemLevel = function()
+      return db.showItemLevel
+    end,
+  })
+  hover(db, { guid = "Player-me" })
+  Assert.contains(W.AllText(), "|cffffd100iLvl|r |cffa335ee650|r", "first hover")
+  equipped = 655
+  hover(db, { guid = "Player-me" })
+  Assert.contains(W.AllText(), "|cffffd100iLvl|r |cffa335ee655|r", "gear change shows next hover")
+  InspectCache.Configure({})
+  rawset(_G, "GetAverageItemLevel", nil)
+end
+
 local function test_secret_name_leaves_name_line_untouched()
   local marker = {}
   rawset(_G, "issecretvalue", function(v)
@@ -330,5 +350,6 @@ return function()
   test_unwrapped_line_resets_wrap_on_a_reused_line()
   test_target_and_targeted_by_lines()
   test_raid_icon_dead_and_friend_tags_on_name()
+  test_hovering_yourself_shows_live_item_level()
   test_secret_name_leaves_name_line_untouched()
 end

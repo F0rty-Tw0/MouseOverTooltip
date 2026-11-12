@@ -45,7 +45,45 @@ function InspectCache.IsPending(guid)
   return guid ~= nil and (guid == inflightGuid or guid == queuedGuid)
 end
 
+local function fill(entry, ilvl, specID)
+  entry.ilvl = ilvl and ilvl > 0 and floor(ilvl) or nil
+  entry.specID = specID and specID > 0 and specID or nil
+end
+
+-- Your own gear and spec are local reads, so they are read fresh on every
+-- hover into one reused table and never take a cache slot.
+local selfEntry = {}
+local playerGuid
+
+local function isSelf(guid)
+  if not playerGuid then
+    playerGuid = Secret.Clean(_G.UnitGUID("player"))
+  end
+  return guid ~= nil and guid == playerGuid
+end
+
+local function wants(key)
+  return deps[key] and deps[key]()
+end
+
+-- Only the lines that are on are read.
+local function readSelf()
+  local ilvl, specID
+  if wants("wantsItemLevel") and type(_G.GetAverageItemLevel) == "function" then
+    ilvl = Secret.Clean(select(2, _G.GetAverageItemLevel()))
+  end
+  if wants("wantsSpec") and type(_G.GetSpecialization) == "function" and type(_G.GetSpecializationInfo) == "function" then
+    local index = Secret.Clean(_G.GetSpecialization())
+    specID = index and Secret.Clean(_G.GetSpecializationInfo(index))
+  end
+  fill(selfEntry, ilvl, specID)
+  return selfEntry
+end
+
 function InspectCache.Get(guid)
+  if isSelf(guid) then
+    return readSelf()
+  end
   local entry = cache[guid]
   if entry and _G.GetTime() - entry.time <= CACHE_TTL then
     return entry
@@ -75,32 +113,21 @@ local function store(guid, ilvl, specID)
     cache[guid] = entry
     cacheCount = cacheCount + 1
   end
-  entry.ilvl = ilvl and ilvl > 0 and floor(ilvl) or nil
-  entry.specID = specID and specID > 0 and specID or nil
+  fill(entry, ilvl, specID)
   entry.pvpRating, entry.pvpBracket = nil, nil
   entry.time = _G.GetTime()
 end
 
-local function readUnit(unit, guid, isSelf)
+local function readInspected(unit, guid)
   local ilvl, specID
-  if isSelf then
-    if type(_G.GetAverageItemLevel) == "function" then
-      ilvl = select(2, _G.GetAverageItemLevel())
-    end
-    if type(_G.GetSpecialization) == "function" and type(_G.GetSpecializationInfo) == "function" then
-      local index = _G.GetSpecialization()
-      specID = index and _G.GetSpecializationInfo(index)
-    end
-  else
-    if FlavorCompat.hasItemLevel then
-      ilvl = Secret.Clean(_G.C_PaperDollInfo.GetInspectItemLevel(unit))
-    end
-    if FlavorCompat.hasSpec then
-      -- The global is a deprecated shim since 12.1.0.
-      local specInfo = _G.C_SpecializationInfo
-      local getSpec = specInfo and specInfo.GetInspectSpecialization or _G.GetInspectSpecialization
-      specID = Secret.Clean(getSpec(unit))
-    end
+  if FlavorCompat.hasItemLevel then
+    ilvl = Secret.Clean(_G.C_PaperDollInfo.GetInspectItemLevel(unit))
+  end
+  if FlavorCompat.hasSpec then
+    -- The global is a deprecated shim since 12.1.0.
+    local specInfo = _G.C_SpecializationInfo
+    local getSpec = specInfo and specInfo.GetInspectSpecialization or _G.GetInspectSpecialization
+    specID = Secret.Clean(getSpec(unit))
   end
   store(guid, ilvl, specID)
 end
@@ -147,7 +174,7 @@ local function onEvent(_, _event, guid)
   end
   local unit = resolveUnit(inflightUnit, guid)
   if unit then
-    readUnit(unit, guid, false)
+    readInspected(unit, guid)
     local entry = cache[guid]
     if deps.wantsPvp and deps.wantsPvp() and deps.readPvp then
       entry.pvpRating, entry.pvpBracket = deps.readPvp()
@@ -208,6 +235,7 @@ local function inCombatSkip()
   return deps.skipInCombat and deps.skipInCombat() and _G.InCombatLockdown()
 end
 
+-- Hovering yourself never reaches the queue: Get reads you live.
 function InspectCache.Request(unit, guid)
   if guid == nil or Secret.Is(guid) or guid == inflightGuid or guid == queuedGuid or InspectCache.Get(guid) then
     return
@@ -216,10 +244,6 @@ function InspectCache.Request(unit, guid)
     return
   end
   failedGuid = nil
-  if guid == Secret.Clean(_G.UnitGUID("player")) then
-    readUnit(unit, guid, true)
-    return
-  end
   if inCombatSkip() or not _G.CanInspect(unit) then
     return
   end
