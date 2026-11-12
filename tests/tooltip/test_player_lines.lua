@@ -180,6 +180,39 @@ local function test_item_level_requests_inspect_then_shows_cached_line()
   Assert.contains(W.AllText(), "|cffffd100iLvl|r |cffa335ee639|r")
 end
 
+local function fireInspectReady(guid)
+  for _, frame in ipairs(W.frames) do
+    frame:FireEvent("INSPECT_READY", guid)
+  end
+end
+
+-- Gear may not be loaded at INSPECT_READY: keep the role, re-inspect later.
+local function test_zero_item_level_keeps_role_and_reinspects_on_later_hover()
+  local readItemLevel = _G.C_PaperDollInfo.GetInspectItemLevel
+  _G.C_PaperDollInfo.GetInspectItemLevel = function()
+    return 0
+  end
+  InspectCache.Configure({
+    wantsItemLevel = function()
+      return true
+    end,
+  })
+  local db = with({ showItemLevel = true, showSpec = true })
+  local gear = { guid = "Player-gear" }
+  hover(db, gear)
+  W.RunTimers()
+  fireInspectReady("Player-gear")
+  hover(db, gear)
+  Assert.contains(W.AllText(), "DPS", "role shown without an item level")
+  hover(db, { guid = "Player-other" })
+  hover(db, gear)
+  Assert.equal(InspectCache.IsPending("Player-gear"), true, "re-inspected on a later hover")
+  W.RunTimers()
+  fireInspectReady("Player-gear")
+  _G.C_PaperDollInfo.GetInspectItemLevel = readItemLevel
+  InspectCache.Configure({})
+end
+
 local function test_no_item_level_placeholder_when_item_level_off()
   hover(with({ showSpec = true }), { guid = "Player-spec" })
   Assert.notContains(W.AllText(), "iLvl")
@@ -319,6 +352,7 @@ return function()
   test_my_guild_highlight()
   test_classic_era_without_guild_line_merges_guild_into_level()
   test_item_level_requests_inspect_then_shows_cached_line()
+  test_zero_item_level_keeps_role_and_reinspects_on_later_hover()
   test_no_item_level_placeholder_when_item_level_off()
   test_spec_and_role_from_inspect()
   test_disabled_inspect_features_never_inspect()

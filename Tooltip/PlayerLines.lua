@@ -163,10 +163,9 @@ function PlayerLines.Apply(tooltip, unit, guid, db)
   local entry, pending
   if guid and wantsInspect(db) then
     entry = InspectCache.Get(guid)
-    if not entry then
-      InspectCache.Request(unit, guid)
-      pending = InspectCache.IsPending(guid)
-    end
+    -- A cached entry may still lack the item level; Request decides.
+    InspectCache.Request(unit, guid)
+    pending = not entry and InspectCache.IsPending(guid)
   end
   local specName, roleText = specInfo(entry, db)
   if PlayerHeader.Wanted(db) then

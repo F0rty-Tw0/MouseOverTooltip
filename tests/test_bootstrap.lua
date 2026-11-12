@@ -29,6 +29,14 @@ _G.UnitFrame_UpdateTooltip = function()
   W.SetTooltipLines("party1", { "Bob", _G.UNIT_POPUP_RIGHT_CLICK })
 end
 _G.MouseOverTooltipDB = { showTarget = true, removed = 1 }
+_G.C_PaperDollInfo = { GetInspectItemLevel = function() end }
+local InspectCache = require("MouseOverTooltip.Data.InspectCache")
+local inspectOptions
+local configureInspect = InspectCache.Configure
+InspectCache.Configure = function(options)
+  inspectOptions = options
+  configureInspect(options)
+end
 require("MouseOverTooltip.Bootstrap")
 
 local function loader()
@@ -75,6 +83,14 @@ local function test_unit_frame_hint_reads_settings()
   Assert.equal(W.LineText(2), nil)
 end
 
+local function test_inspect_item_level_follows_setting()
+  _G.MouseOverTooltipDB.showItemLevel = true
+  Assert.equal(inspectOptions.wantsItemLevel(), true)
+  _G.MouseOverTooltipDB.showItemLevel = false
+  Assert.equal(inspectOptions.wantsItemLevel(), false)
+  _G.MouseOverTooltipDB.showItemLevel = true
+end
+
 local function test_compartment_functions_are_global()
   Assert.equal(type(_G.MouseOverTooltip_OnAddonCompartmentClick), "function")
   Assert.equal(type(_G.MouseOverTooltip_OnAddonCompartmentEnter), "function")
@@ -85,6 +101,7 @@ return function()
   test_other_addons_loading_are_ignored()
   test_addon_loaded_initializes_everything_once()
   test_unit_frame_hint_reads_settings()
+  test_inspect_item_level_follows_setting()
   test_compartment_functions_are_global()
   test_scale_slider_rescales_tooltip()
 end
