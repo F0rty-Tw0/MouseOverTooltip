@@ -6,6 +6,8 @@ All releases: **1.1.x (current)** · [1.0.x](archive/changelog/1.0.md) · [0.1.x
 
 ## [Unreleased]
 
+- Fixed: possible Lua errors in combat when a player's item level and spec finished loading mid-fight. In combat, they now show the next time you hover that player.
+- Fixed: "Skip inspect in combat" now also stops an inspect started just before the pull.
 - Fixed: the Mythic+ rating could stay missing for players outside your group when item level, spec and PvP rating were all turned off.
 
 ## [1.1.1] - 2026-11-12

@@ -123,6 +123,15 @@ local function test_combat_skip_follows_setting()
   Assert.equal(W.calls.NotifyInspect, 1, "setting off inspects in combat")
 end
 
+local function test_queued_request_dropped_when_combat_starts()
+  local InspectCache, ready = setup()
+  InspectCache.Request("mouseover", "Player-1")
+  W.inCombat = true
+  W.RunTimers()
+  Assert.equal(W.calls.NotifyInspect, nil, "not sent after the pull")
+  Assert.equal(ready[1], "Player-1", "dropped request still reports ready")
+end
+
 local function test_timeout_unregisters_event()
   local InspectCache = setup()
   hoverAndWait(InspectCache, "mouseover", "Player-1")
@@ -330,6 +339,7 @@ return function()
   test_requests_inside_throttle_are_queued_on_a_timer()
   test_queued_request_dropped_when_unit_changed()
   test_combat_skip_follows_setting()
+  test_queued_request_dropped_when_combat_starts()
   test_timeout_unregisters_event()
   test_pending_from_hover_until_data_arrives()
   test_timeout_refreshes_and_does_not_retry_same_player()
