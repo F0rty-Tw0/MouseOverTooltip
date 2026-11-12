@@ -6,6 +6,7 @@ All releases: **1.1.x (current)** · [1.0.x](archive/changelog/1.0.md) · [0.1.x
 
 ## [Unreleased]
 
+- Fixed: item level, spec and PvP rating could stop loading for the rest of the session after a player's details failed to arrive, until you reloaded the UI.
 - Fixed: the Mythic+ rating could stay missing for players outside your group when item level, spec and PvP rating were all turned off.
 
 ## [1.1.1] - 2026-11-12
