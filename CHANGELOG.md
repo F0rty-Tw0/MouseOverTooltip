@@ -6,6 +6,8 @@ All releases: **1.1.x (current)** · [1.0.x](archive/changelog/1.0.md) · [0.1.x
 
 ## [Unreleased]
 
+- Fixed: a long mount source (where the mount comes from) could stretch the tooltip very wide instead of wrapping onto more lines.
+
 ## [1.1.0] - 2026-11-10
 
 - Fixed: with health text on, hovering someone in Mythic+ right after hovering a party or target frame could show that frame's health numbers instead.
