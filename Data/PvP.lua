@@ -13,8 +13,10 @@ local TABLE_BRACKETS = {
   { "GetInspectRatedBGData", "Rated BG" },
 }
 
--- Reads the inspected player's best rated bracket; valid after
--- INSPECT_HONOR_UPDATE (same calls as Blizzard's InspectPVPFrame).
+-- Reads the inspected player's best rated bracket (same calls as Blizzard's
+-- InspectPVPFrame). On Retail INSPECT_HONOR_UPDATE fires just before
+-- INSPECT_READY (in-game trace, 12.x); non-zero ratings at INSPECT_READY
+-- not yet observed.
 local PvP = {}
 
 local best, bestBracket

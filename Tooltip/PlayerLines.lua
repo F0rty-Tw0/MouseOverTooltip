@@ -41,7 +41,9 @@ local function specInfo(entry, db)
 end
 
 -- Lines ClearNoise blanked; new lines fill them before appending, so no
--- empty gap stays under the header.
+-- empty gap stays under the header. A reused line gets the wrap AddLine
+-- would have set, so a long line can't stretch the tooltip and no earlier
+-- wrap state carries over.
 local freed = {}
 local freedCount, freedNext = 0, 1
 
@@ -50,7 +52,11 @@ local function emit(tooltip, text, r, g, b, wrap)
     local index = freed[freedNext]
     freedNext = freedNext + 1
     Lines.Set(index, text)
-    Lines.left[index]:SetTextColor(r, g, b)
+    local line = Lines.left[index]
+    line:SetTextColor(r, g, b)
+    if line.SetWordWrap then
+      line:SetWordWrap(wrap == true)
+    end
     return
   end
   tooltip:AddLine(text, r, g, b, wrap)

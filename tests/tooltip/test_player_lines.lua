@@ -228,7 +228,8 @@ local function test_disabled_mount_makes_no_aura_or_journal_calls()
   Assert.equal(calls, 1, "enabled mount scans auras")
 end
 
-local function test_mount_source_line_aligns_with_other_lines()
+-- Hovers Bob riding a vendor-sold mount, then restores the aura and journal stubs.
+local function hoverMounted(db)
   local auras, journal = _G.C_UnitAuras.GetAuraDataByIndex, _G.C_MountJournal
   _G.C_UnitAuras.GetAuraDataByIndex = function(_unit, index)
     return index == 1 and { spellId = 42777 } or nil
@@ -244,9 +245,26 @@ local function test_mount_source_line_aligns_with_other_lines()
       return 1, "desc", "|cFFFFD200Vendor:|r Lindormi"
     end,
   }
-  hover(with({ showMount = true, showMountSource = true }))
+  hover(db)
   _G.C_UnitAuras.GetAuraDataByIndex, _G.C_MountJournal = auras, journal
+end
+
+local function test_mount_source_line_aligns_with_other_lines()
+  hoverMounted(with({ showMount = true, showMountSource = true }))
   Assert.contains(W.AllText(), "\nVendor: Lindormi", "source line starts at the left edge")
+end
+
+local function test_mount_source_wraps_when_it_reuses_a_cleared_line()
+  hoverMounted(with({ allBasics = true, showMount = true, showMountSource = true }))
+  Assert.contains(W.LineText(5), "Lindormi", "source line reuses a cleared Blizzard line")
+  Assert.equal(W.Line(5).wordWrap, true, "long source text wraps instead of widening the tooltip")
+end
+
+local function test_unwrapped_line_resets_wrap_on_a_reused_line()
+  W.Line(4).wordWrap = true
+  hover(with({ allBasics = true, showMythicPlus = true }))
+  Assert.contains(W.LineText(4), "M+")
+  Assert.equal(W.Line(4).wordWrap, false, "no wrap left over from an earlier line")
 end
 
 local function test_target_and_targeted_by_lines()
@@ -308,6 +326,8 @@ return function()
   test_mythic_plus_alone_requests_inspect_without_item_level_placeholder()
   test_disabled_mount_makes_no_aura_or_journal_calls()
   test_mount_source_line_aligns_with_other_lines()
+  test_mount_source_wraps_when_it_reuses_a_cleared_line()
+  test_unwrapped_line_resets_wrap_on_a_reused_line()
   test_target_and_targeted_by_lines()
   test_raid_icon_dead_and_friend_tags_on_name()
   test_secret_name_leaves_name_line_untouched()
