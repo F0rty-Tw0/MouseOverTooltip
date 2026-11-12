@@ -23,10 +23,13 @@ local PENDING_TEXT = "..."
 
 local PlayerLines = {}
 
+-- M+ reads no cache entry, but a stranger's rating summary only loads after
+-- an inspect, and the inspect's refresh redraws the line.
 local function wantsInspect(db)
   return (db.showItemLevel and FlavorCompat.hasItemLevel)
     or (db.showSpec and FlavorCompat.hasSpec)
     or (db.showPvpRating and FlavorCompat.hasPvpRating)
+    or (db.showMythicPlus and FlavorCompat.hasMythicPlus)
 end
 
 local function specInfo(entry, db)

@@ -210,6 +210,13 @@ local function test_mythic_plus_line_and_disabled_path()
   Assert.equal(calls, 1, "disabled M+ makes no API call")
 end
 
+local function test_mythic_plus_alone_requests_inspect_without_item_level_placeholder()
+  hover(with({ showMythicPlus = true }), { guid = "Player-mplus" })
+  W.RunTimers()
+  Assert.equal(W.calls.NotifyInspect, 1, "inspect loads a stranger's M+ summary")
+  Assert.notContains(W.AllText(), "iLvl")
+end
+
 local function test_disabled_mount_makes_no_aura_or_journal_calls()
   local calls = 0
   _G.C_UnitAuras.GetAuraDataByIndex = function()
@@ -316,6 +323,7 @@ return function()
   test_spec_and_role_from_inspect()
   test_disabled_inspect_features_never_inspect()
   test_mythic_plus_line_and_disabled_path()
+  test_mythic_plus_alone_requests_inspect_without_item_level_placeholder()
   test_disabled_mount_makes_no_aura_or_journal_calls()
   test_mount_source_line_aligns_with_other_lines()
   test_mount_source_wraps_when_it_reuses_a_cleared_line()
