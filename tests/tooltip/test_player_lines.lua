@@ -267,6 +267,22 @@ local function test_unwrapped_line_resets_wrap_on_a_reused_line()
   Assert.equal(W.Line(4).wordWrap, false, "no wrap left over from an earlier line")
 end
 
+-- Spell and talent tooltips reuse the same lines and Blizzard doesn't reset
+-- wrap, so a leftover "off" cut their descriptions short with "...".
+local function test_reused_line_wrap_is_restored_when_the_tooltip_clears()
+  W.Line(4).wordWrap = true
+  hover(with({ allBasics = true, showMythicPlus = true }))
+  W.tooltip:Fire("OnTooltipCleared")
+  Assert.equal(W.Line(4).wordWrap, true, "the next tooltip gets the line's original wrap")
+end
+
+local function test_wrap_restore_hook_installs_once()
+  hover(with({ allBasics = true, showMythicPlus = true }))
+  local hooks = #(W.tooltip.hooks.OnTooltipCleared or {})
+  hover(with({ allBasics = true, showMythicPlus = true }))
+  Assert.equal(#(W.tooltip.hooks.OnTooltipCleared or {}), hooks, "no extra hook per hover")
+end
+
 local function test_target_and_targeted_by_lines()
   hover(with({ showTarget = true }))
   Assert.notContains(W.AllText(), "Target:")
@@ -328,6 +344,8 @@ return function()
   test_mount_source_line_aligns_with_other_lines()
   test_mount_source_wraps_when_it_reuses_a_cleared_line()
   test_unwrapped_line_resets_wrap_on_a_reused_line()
+  test_reused_line_wrap_is_restored_when_the_tooltip_clears()
+  test_wrap_restore_hook_installs_once()
   test_target_and_targeted_by_lines()
   test_raid_icon_dead_and_friend_tags_on_name()
   test_secret_name_leaves_name_line_untouched()

@@ -47,6 +47,33 @@ end
 local freed = {}
 local freedCount, freedNext = 0, 1
 
+-- Original wrap of each line emit changed, put back when the tooltip clears:
+-- spell and talent tooltips reuse these lines and Blizzard doesn't reset
+-- wrap, so a leftover "off" cuts their text short with "...".
+local wrapBefore = {}
+local wrapHooked = false
+
+local function restoreWrap()
+  for index, wrap in pairs(wrapBefore) do
+    Lines.left[index]:SetWordWrap(wrap)
+    wrapBefore[index] = nil
+  end
+end
+
+local function setWrap(tooltip, index, line, wrap)
+  if not (line.SetWordWrap and line.CanWordWrap) then
+    return
+  end
+  if wrapBefore[index] == nil then
+    wrapBefore[index] = line:CanWordWrap()
+  end
+  line:SetWordWrap(wrap == true)
+  if not wrapHooked then
+    wrapHooked = true
+    tooltip:HookScript("OnTooltipCleared", restoreWrap)
+  end
+end
+
 local function emit(tooltip, text, r, g, b, wrap)
   if freedNext <= freedCount then
     local index = freed[freedNext]
@@ -54,9 +81,7 @@ local function emit(tooltip, text, r, g, b, wrap)
     Lines.Set(index, text)
     local line = Lines.left[index]
     line:SetTextColor(r, g, b)
-    if line.SetWordWrap then
-      line:SetWordWrap(wrap == true)
-    end
+    setWrap(tooltip, index, line, wrap)
     return
   end
   tooltip:AddLine(text, r, g, b, wrap)
