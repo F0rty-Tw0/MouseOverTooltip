@@ -6,6 +6,8 @@ All releases: **1.1.x (current)** · [1.0.x](archive/changelog/1.0.md) · [0.1.x
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-11-15
+
 - Fixed: with "Hide unit frames in combat" on, hovering your player or party frame in combat still showed the tooltip.
 
 ## [1.1.2] - 2026-11-13
