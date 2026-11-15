@@ -131,6 +131,43 @@ local function test_timeout_unregisters_event()
   Assert.equal(inspectFrame().events.INSPECT_READY, nil)
 end
 
+local INSPECT_TIMEOUT = 3
+
+local function takeTimer(delay)
+  for i, timer in ipairs(W.timers) do
+    if timer.delay == delay then
+      return table.remove(W.timers, i)
+    end
+  end
+end
+
+-- The timer clock and the frame clock can disagree by a hair; the request's
+-- own timeout must still end it.
+local function test_timeout_finishes_even_when_clock_reads_early()
+  local InspectCache, ready = setup()
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  local timeout = takeTimer(INSPECT_TIMEOUT)
+  W.now = W.now + INSPECT_TIMEOUT - 0.001
+  timeout.fn()
+  Assert.equal(inspectFrame().events.INSPECT_READY, nil, "unregistered")
+  Assert.equal(ready[1], "Player-1", "tooltip rebuilt")
+  Assert.equal(InspectCache.IsPending("Player-1"), false)
+end
+
+local function test_stale_timeout_does_not_finish_newer_request()
+  local InspectCache = setup()
+  hoverAndWait(InspectCache, "mouseover", "Player-1")
+  local staleTimeout = takeTimer(INSPECT_TIMEOUT)
+  inspectFrame():FireEvent("INSPECT_READY", "Player-1")
+  W.units.mouseover = { name = "Amy", guid = "Player-2", isPlayer = true }
+  W.now = W.now + 1.5
+  hoverAndWait(InspectCache, "mouseover", "Player-2")
+  Assert.equal(W.calls.NotifyInspect, 2)
+  staleTimeout.fn()
+  Assert.equal(InspectCache.IsPending("Player-2"), true, "newer request still in flight")
+  Assert.equal(inspectFrame().events.INSPECT_READY, true, "still waiting for the newer one")
+end
+
 local function test_pending_from_hover_until_data_arrives()
   local InspectCache = setup()
   InspectCache.Request("mouseover", "Player-1")
@@ -331,6 +368,8 @@ return function()
   test_queued_request_dropped_when_unit_changed()
   test_combat_skip_follows_setting()
   test_timeout_unregisters_event()
+  test_timeout_finishes_even_when_clock_reads_early()
+  test_stale_timeout_does_not_finish_newer_request()
   test_pending_from_hover_until_data_arrives()
   test_timeout_refreshes_and_does_not_retry_same_player()
   test_hovering_another_player_allows_retry_after_timeout()

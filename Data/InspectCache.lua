@@ -32,6 +32,7 @@ local waiting = false
 local failedGuid
 local timerQueued = false
 local lastNotify = -math.huge
+local requestSeq = 0
 
 function InspectCache.Configure(options)
   deps = options or {}
@@ -159,8 +160,10 @@ local function onEvent(_, _event, guid)
   end
 end
 
-local function onTimeout()
-  if waiting and _G.GetTime() - lastNotify >= TIMEOUT then
+-- Timers from earlier requests carry an older sequence and are ignored; the
+-- timer clock can lag GetTime, so elapsed time can't tell them apart.
+local function onTimeout(seq)
+  if waiting and seq == requestSeq then
     local guid = inflightGuid
     finish()
     failedGuid = guid
@@ -182,9 +185,13 @@ local function sendQueued()
   inflightUnit, inflightGuid = unit, guid
   waiting = true
   lastNotify = _G.GetTime()
+  requestSeq = requestSeq + 1
+  local seq = requestSeq
   frame:RegisterEvent("INSPECT_READY")
   _G.NotifyInspect(unit)
-  _G.C_Timer.After(TIMEOUT, onTimeout)
+  _G.C_Timer.After(TIMEOUT, function()
+    onTimeout(seq)
+  end)
 end
 
 local function onTimer()
