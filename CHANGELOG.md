@@ -7,6 +7,14 @@ All releases: **1.1.x (current)** · [1.0.x](archive/changelog/1.0.md) · [0.1.x
 ## [Unreleased]
 
 - Fixed: item level, spec and PvP rating could stop loading for the rest of the session after a player's details failed to arrive, until you reloaded the UI.
+
+## [1.1.3] - 2026-11-15
+
+- Fixed: with "Hide unit frames in combat" on, hovering your player or party frame in combat still showed the tooltip.
+
+## [1.1.2] - 2026-11-13
+
+- Fixed: after hovering a player, spell and talent tooltips could cut their description short with "..." instead of wrapping onto more lines.
 - Fixed: the Mythic+ rating could stay missing for players outside your group when item level, spec and PvP rating were all turned off.
 
 ## [1.1.1] - 2026-11-12
