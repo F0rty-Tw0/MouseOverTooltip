@@ -171,10 +171,15 @@ local function onTimeout(seq)
   end
 end
 
+local function inCombatSkip()
+  return deps.skipInCombat and deps.skipInCombat() and _G.InCombatLockdown()
+end
+
+-- Combat may have started since the hover was queued.
 local function sendQueued()
   local unit, guid = queuedUnit, queuedGuid
   queuedUnit, queuedGuid = nil, nil
-  if not (unitStillMatches(unit, guid) and _G.CanInspect(unit)) then
+  if inCombatSkip() or not (unitStillMatches(unit, guid) and _G.CanInspect(unit)) then
     notifyReady(guid)
     return
   end
@@ -209,10 +214,6 @@ schedule = function()
     timerQueued = true
     _G.C_Timer.After(waiting and THROTTLE or wait, onTimer)
   end
-end
-
-local function inCombatSkip()
-  return deps.skipInCombat and deps.skipInCombat() and _G.InCombatLockdown()
 end
 
 function InspectCache.Request(unit, guid)

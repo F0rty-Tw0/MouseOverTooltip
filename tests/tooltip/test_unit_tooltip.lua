@@ -90,6 +90,16 @@ local function test_refresh_skipped_when_another_unit_is_shown()
   Assert.equal(W.calls.RefreshData, nil)
 end
 
+-- Rebuilding Blizzard's tooltip from addon code in combat taints it.
+local function test_refresh_skipped_in_combat()
+  hoverBob()
+  W.calls.RefreshData = nil
+  W.inCombat = true
+  UnitTooltip.Refresh("Player-1")
+  W.inCombat = false
+  Assert.equal(W.calls.RefreshData, nil)
+end
+
 local function test_combat_hide_hides_before_any_styling()
   db.hideWorldInCombat = true
   W.inCombat = true
@@ -224,6 +234,7 @@ return function()
   test_missing_unit_keeps_blizzard_lines()
   test_inspect_result_refreshes_shown_tooltip()
   test_refresh_skipped_when_another_unit_is_shown()
+  test_refresh_skipped_in_combat()
   test_combat_hide_hides_before_any_styling()
   test_secret_unit_still_hides_health_bar()
   test_secret_unit_keeps_health_text()

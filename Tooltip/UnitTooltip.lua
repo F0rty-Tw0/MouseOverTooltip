@@ -76,9 +76,11 @@ local function onItem(tooltip)
 end
 
 -- Inspect data arrived: rebuild the tooltip if it still shows that player.
+-- Not in combat: rebuilding Blizzard's tooltip from addon code taints it; the
+-- next hover reads the cached data.
 function UnitTooltip.Refresh(guid)
   local tooltip = _G.GameTooltip
-  if not tooltip:IsShown() then
+  if _G.InCombatLockdown() or not tooltip:IsShown() then
     return
   end
   local unit = shownUnit(tooltip)
