@@ -125,6 +125,9 @@ local function newWidget(W, name)
   function widget:SetWordWrap(wrap)
     self.wordWrap = wrap
   end
+  function widget:CanWordWrap()
+    return self.wordWrap ~= false
+  end
   function widget:GetCenter()
     return self.centerX or 0, self.centerY or 0
   end
